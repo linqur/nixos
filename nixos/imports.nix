@@ -1,0 +1,36 @@
+{
+  imports = [
+    ./audio.nix
+    ./bash.nix
+    ./battery.nix
+    ./bluetooth.nix
+    ./console.nix
+    ./dconf.nix
+    ./denoise.nix
+    ./docker.nix
+    ./editor.nix
+    ./fonts.nix
+    ./games.nix
+    ./gpu-tuning.nix
+    ./hardware.nix
+    ./home-manager.nix
+    ./init.nix
+    ./initrd.nix
+    ./kernel.nix
+    ./loader.nix
+    ./locale.nix
+    ./logrotate.nix
+    ./net.nix
+    ./nh.nix
+    ./niri.nix
+    ./nix.nix
+    ./nvidia.nix
+    ./packages.nix
+    ./rust.nix
+    ./stateVersion.nix
+    ./timezone.nix
+    ./touchpad.nix
+    ./user.nix
+    ./virt.nix
+  ];
+}

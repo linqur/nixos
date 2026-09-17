@@ -1,0 +1,4 @@
+# Статический бинарь под musl: всё внутри, без интерпретатора и путей к glibc в store
+# (см. «Скрипты» в Readme.md). Результат — target/x86_64-unknown-linux-musl/release/
+[build]
+target = "x86_64-unknown-linux-musl"

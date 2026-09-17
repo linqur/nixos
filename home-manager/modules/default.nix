@@ -1,0 +1,26 @@
+{
+  imports = [
+    ./eza.nix
+    ./firefox.nix
+    ./foot.nix
+    ./fuzzel.nix
+    ./git.nix
+    ./go.nix
+    ./helix.nix
+    ./gtk.nix
+    ./imv.nix
+    ./keepassxc.nix
+    ./mime.nix
+    ./mpv.nix
+    ./niri.nix
+    ./no-trash.nix
+    ./qt.nix
+    ./rust.nix
+    ./thunar.nix
+    ./ssh.nix
+    ./vesktop.nix
+    ./vscode.nix
+    ./waybar.nix
+    ./zathura.nix
+  ];
+}
