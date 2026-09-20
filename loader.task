@@ -1,0 +1,43 @@
+Задача: свой загрузчик в nixos/loader.nix
+
+Цель: при каждом switch/boot собирать UKI, подписывать его и раскладывать на ESP с ротацией на 3 поколения. Без systemd-boot/grub, без меню и без записей в NVRAM.
+
+Что сделать:
+1. Подключить ./nixos/loader.nix в modules в flake.nix, сейчас его там нет.
+2. boot.loader.grub.enable = false. systemd-boot выключен по умолчанию.
+3. system.build.installBootLoader — свой скрипт через writeShellApplication (runtimeInputs: systemdUkify, sbctl, coreutils). Он прогоняет shellcheck при сборке, так что ошибки в скрипте всплывут на nixos-rebuild build.
+4. Шаги скрипта, $1 — toplevel нового поколения:
+   - нет /var/lib/sbctl/keys → sbctl create-keys. enroll-keys скрипт не делает;
+   - N берётся из /var/lib/…/profiles/system → system-N-link, с проверкой, что ссылка ведёт на $1, иначе ошибка;
+   - ukify build с параметрами --linux $1/kernel, --initrd $1/initrd, --cmdline "init=$1/init $(cat $1/kernel-params)", --os-release @$1/etc/os-release, --stub …/linuxx64.efi.stub, --output во временный файл;
+   - sbctl sign временного файла;
+   - копия в /boot/EFI/Linux/nixos-generation-N.efi, перезапись допустима, это даёт идемпотентность;
+   - копия в /boot/EFI/BOOT/BOOTX64.EFI через временное имя на ESP и mv, чтобы при обрыве питания не остался наполовину записанный дефолт;
+   - прунинг по файлам на ESP: nixos-generation-*.efi, сортировка по числу, остаются 3 последних. Только что установленное поколение не удалять никогда: при откате на старое оно может оказаться не в тройке. rescue.efi под этот шаблон не попадает.
+
+Ручной шаг вне Nix: после первой загрузки в Setup Mode выполнить sbctl enroll-keys (без --microsoft), затем включить Secure Boot.
+
+Критерии готовности (в VM):
+- nixos-rebuild build проходит;
+- nixos-install кладёт BOOTX64.EFI и nixos-generation-1.efi;
+- VM на OVMF с secboot-прошивкой: enroll → Secure Boot включён → система грузится;
+- sbctl verify показывает, что всё на ESP подписано;
+- после 4 ребилдов в EFI/Linux/ ровно 3 файла;
+- после --rollback в BOOTX64.EFI лежит старое поколение;
+- архивный файл, выбранный вручную в Boot Manager OVMF, загружается.
+
+
+Нет. Код рабочий по замыслу, но в двух местах он обходит канонический интерфейс NixOS, и одна вещь в репозитории сейчас противоречит комментарию.
+
+1. Главное: bootspec вместо раскладки toplevel
+
+Что сейчас. Go читает $1/kernel, $1/initrd, $1/init, $1/kernel-params. Это внутреннее устройство toplevel, а не контракт.
+
+Что канонично. Контракт — $1/boot.json (bootspec, RFC 0125, boot.bootspec.enable включён по умолчанию). Его и читают установщики вроде lanzaboote. В секции "org.nixos.bootspec.v1" лежат kernel, initrd, init и kernelParams, причём параметры уже списком. Разбирать kernel-params вручную не нужно, хватит encoding/json из stdlib.
+
+Бонус, который закрывает мои прошлые оговорки. boot.bootspec.extensions позволяет Nix положить в тот же boot.json свои поля. Туда можно передать пути к stub, ukify и sbctl, например под ключом "io.github.linqur.uki". Nix знает эти пути при сборке, и цикла нет: пакеты не зависят от toplevel. Что это даёт:
+- путь к stub больше не угадывается через $1/systemd/…;
+- ukify не нужно класть в systemPackages, а значит, нет риска, что полный systemdUkify подменит systemctl в sw/bin;
+- всё, что приходит из Nix, видно в loader.nix одним блоком.
+
+Я упустил это, когда предлагал искать утилиты от $1. Вариант с bootspec лучше.
