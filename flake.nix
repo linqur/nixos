@@ -11,6 +11,9 @@
   outputs = { self, nixpkgs, nixpkgs-unstable, disko, ... }:
     let
       system = "x86_64-linux";
+      hostName = "home-rog";
+      stateVersion = "26.05";
+      userName = "linqur";
     in
     {
       nixosConfigurations.home-rog = nixpkgs.lib.nixosSystem {
