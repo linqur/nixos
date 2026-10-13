@@ -4,7 +4,7 @@
   networking.hostName = "vm";
 
   imports = [
-    ../nixos/imports.nix
+    ../../nixos/imports.nix
     (modulesPath + "/profiles/qemu-guest.nix")
   ];
 
