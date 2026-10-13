@@ -3,7 +3,7 @@
     disk = {
       master = {
         type = "disk";
-        device = "/dev/vda";
+        device = "X";
         content = {
           type = "gpt";
           partitions = {
@@ -39,7 +39,7 @@
                   "--pbkdf" "argon2id"
                   "--pbkdf-parallel" "4"
                   "--pbkdf-memory" "65536"
-                  "--pbkdf-force-iterations" "3"
+                  "--pbkdf-force-iterations" "4"
                   # защита от брутфорса
                   "--sector-size" "4096" # лучший размер для блочных носителей сегодня
                   "--use-urandom"
