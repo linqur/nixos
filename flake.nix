@@ -24,8 +24,10 @@
       inherit system;
 
       specialArgs = {
+        inherit user stateVersion inputs;
+
         unstable = import nixpkgs-unstable {
-          inherit system user stateVersion inputs;
+          inherit system;
           config.allowUnfree = true;
         };
         enums = import ./lib/enums.nix;
@@ -42,8 +44,10 @@
       inherit system;
 
       specialArgs = {
+        inherit user stateVersion inputs;
+
         unstable = import nixpkgs-unstable {
-          inherit system user stateVersion inputs;
+          inherit system;
           config.allowUnfree = true;
         };
         enums = import ./lib/enums.nix;
