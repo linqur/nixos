@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Первичная установка хоста из корня репозитория: ./install.sh
 set -euo pipefail
 
 ROOT=$PWD

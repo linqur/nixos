@@ -5,7 +5,10 @@
     ./kernel.nix
     ./loader.nix
     ./locale.nix
-    ./network.nix
+    ./mime.nix
+    ./net.nix
+    ./nh.nix
+    ./nix.nix
     ./stateVersion.nix
     ./timezone.nix
     ./user.nix
