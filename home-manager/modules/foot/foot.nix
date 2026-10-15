@@ -3,7 +3,7 @@
     settings = {
       main = {
         font = "JetBrains Mono:size=11, Noto Color Emoji:size=11";
-        pad = "8x8";
+        pad = "6x6";
       };
 
       scrollback.lines = 10000;
