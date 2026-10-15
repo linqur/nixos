@@ -16,8 +16,12 @@ select HOST in "${HOSTS[@]}"; do
   [ -n "${HOST:-}" ] && break
 done
 
+# Имя пользователя берём из flake.nix (specialArgs.user)
+USER_NAME=$("${NIX[@]}" eval --raw "$ROOT#nixosConfigurations.$HOST._module.specialArgs.user")
+
 echo
 echo "Хост: $HOST"
+echo "Пользователь: $USER_NAME"
 echo "Диск(и) из hosts/$HOST/disko.nix:"
 grep -E '^\s*device\s*=' "hosts/$HOST/disko.nix" || true
 echo
@@ -28,6 +32,10 @@ sudo nix --extra-experimental-features "nix-command flakes" \
     --mode destroy,format,mount --flake "$ROOT#$HOST"
 
 # 2. Установка
-sudo nixos-install --flake "$ROOT#$HOST" --no-root-passwd
+sudo nixos-install --flake "$ROOT#$HOST"
+
+# 3. Пароль пользователя
+echo "Пароль для пользователя $USER_NAME:"
+sudo nixos-enter --root /mnt -c "passwd $USER_NAME"
 
 echo "Готово."
