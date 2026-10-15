@@ -1,6 +1,7 @@
 {
   imports = [
-    ./foot/foot.nix
+    ./foot.nix
+    ./fuzzel.nix
     ./git.nix
   ];
 }
