@@ -9,6 +9,7 @@
     ./mime.nix
     ./net.nix
     ./nh.nix
+    ./niri.nix
     ./nix.nix
     ./packages.nix
     ./stateVersion.nix
