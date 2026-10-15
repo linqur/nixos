@@ -1,6 +1,7 @@
 {
   imports = [
     ./audio.nix
+    ./bash.nix
     ./fonts.nix
     ./home-manager.nix
     ./initrd.nix
