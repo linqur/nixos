@@ -12,4 +12,5 @@
   programs.foot.enable = true;
   programs.helix.enable = true;
   programs.niri.enable = true;
+  programs.git.enable = true;
 }
