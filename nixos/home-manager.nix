@@ -1,6 +1,13 @@
-{ inputs, ... }: 
+{ inputs, user, homeStateVersion, ... }: 
 
 {
   imports = [ inputs.home-manager.nixosModules.default ];
-  home-manager.backupFileExtension = "backup";
+  
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    backupFileExtension = "backup";
+    extraSpecialArgs = { inherit user homeStateVersion inputs; };
+    users.${user} = import ../home-manager/home.nix;
+  };
 }

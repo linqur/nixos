@@ -18,13 +18,14 @@
   let 
     user = "linqur";
     stateVersion = "26.05";
+    homeStateVersion = "26.05";
     system = "x86_64-linux";
   in {
     nixosConfigurations."home-rog" = nixpkgs.lib.nixosSystem {
       inherit system;
 
       specialArgs = {
-        inherit user stateVersion inputs;
+        inherit user stateVersion homeStateVersion inputs;
 
         unstable = import nixpkgs-unstable {
           inherit system;
@@ -44,7 +45,7 @@
       inherit system;
 
       specialArgs = {
-        inherit user stateVersion inputs;
+        inherit user stateVersion homeStateVersion inputs;
 
         unstable = import nixpkgs-unstable {
           inherit system;
@@ -57,17 +58,6 @@
         disko.nixosModules.disko
         ./hosts/vm/disko.nix
         ./hosts/vm/configuration.nix
-      ];
-    };
-
-    homeConfigurations.${user} = home-manager.lib.homeManagerConfiguration {
-      pkgs = nixpkgs.legacyPackages.${system};
-      extraSpecialArgs = {
-        inherit user stateVersion inputs;
-      };
-
-      modules = [
-        ./home-manager/home.nix
       ];
     };
   };

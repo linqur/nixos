@@ -1,7 +1,9 @@
 {
   programs.git = {
     enable = true;
-    userName = "Oleg Khrulev";
-    userEmail = "linqur@gmail.com";
+    user = {
+      name = "Oleg Khrulev";
+      email = "linqur@gmail.com";
+    };
   };
 }
