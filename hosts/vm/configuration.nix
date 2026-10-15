@@ -9,4 +9,6 @@
   ];
   
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
+
+  services.spice-vdagentd.enable = true;
 }
