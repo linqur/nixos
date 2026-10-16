@@ -15,6 +15,7 @@
     ./nix.nix
     ./packages.nix
     ./stateVersion.nix
+    ./stylix.nix
     ./timezone.nix
     ./user.nix
   ];

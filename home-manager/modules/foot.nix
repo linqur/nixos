@@ -2,7 +2,6 @@
   programs.foot = {
     settings = {
       main = {
-        font = "JetBrains Mono:size=11, Noto Color Emoji:size=11";
         pad = "6x6";
       };
 
@@ -14,33 +13,6 @@
       };
 
       mouse.hide-when-typing = "yes";
-
-      # Nord
-      colors-dark = {
-        foreground = "d8dee9";
-        background = "2e3440";
-        cursor = "2e3440 d8dee9";
-        selection-foreground = "d8dee9";
-        selection-background = "4c566a";
-
-        regular0 = "3b4252";
-        regular1 = "bf616a";
-        regular2 = "a3be8c";
-        regular3 = "ebcb8b";
-        regular4 = "81a1c1";
-        regular5 = "b48ead";
-        regular6 = "88c0d0";
-        regular7 = "e5e9f0";
-
-        bright0 = "4c566a";
-        bright1 = "bf616a";
-        bright2 = "a3be8c";
-        bright3 = "ebcb8b";
-        bright4 = "81a1c1";
-        bright5 = "b48ead";
-        bright6 = "8fbcbb";
-        bright7 = "eceff4";
-      };
     };
   };
 }

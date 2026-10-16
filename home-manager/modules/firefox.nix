@@ -1,5 +1,8 @@
-{ pkgs, ... }:
+{ config, ... }:
 
+let
+  c = config.lib.stylix.colors.withHashtag;  # палитра из Stylix
+in
 {
   programs.firefox = {
     # --- Телеметрия и лишние сервисы ---
@@ -62,88 +65,87 @@
     profiles.default = {
       isDefault = true;
 
-      # Палитра Nord, как в foot и niri:
-      # polar night #2e3440 #3b4252 #434c5e #4c566a, snow storm #d8dee9 #e5e9f0, frost #88c0d0 #81a1c1, red #bf616a
+      # Цвета берутся из Stylix: base00-03 фон от тёмного к светлому, base04-06 текст, base0C акцент
       userChrome = ''
         :root {
-          --lwt-accent-color: #2e3440 !important;                   /* фон окна и полосы вкладок */
-          --lwt-text-color: #d8dee9 !important;
-          --toolbar-bgcolor: #3b4252 !important;                    /* панель с адресной строкой */
-          --toolbar-color: #d8dee9 !important;
-          --toolbar-field-background-color: #2e3440 !important;     /* адресная строка */
-          --toolbar-field-color: #e5e9f0 !important;
-          --toolbar-field-focus-background-color: #2e3440 !important;
-          --toolbar-field-focus-color: #eceff4 !important;
-          --toolbar-field-focus-border-color: #88c0d0 !important;
-          --tab-selected-bgcolor: #4c566a !important;               /* активная вкладка */
-          --tab-selected-textcolor: #eceff4 !important;
-          --tab-loading-fill: #88c0d0 !important;
-          --arrowpanel-background: #3b4252 !important;              /* выпадающие меню и панели */
-          --arrowpanel-color: #d8dee9 !important;
-          --arrowpanel-border-color: #4c566a !important;
-          --arrowpanel-dimmed: #434c5e !important;
-          --sidebar-background-color: #2e3440 !important;
-          --sidebar-text-color: #d8dee9 !important;
-          --autocomplete-popup-background: #3b4252 !important;      /* список подсказок */
-          --autocomplete-popup-color: #d8dee9 !important;
-          --autocomplete-popup-highlight-background: #4c566a !important;
-          --autocomplete-popup-highlight-color: #eceff4 !important;
-          --focus-outline-color: #88c0d0 !important;
-          --toolbarbutton-icon-fill: #d8dee9 !important;            /* иконки кнопок */
+          --lwt-accent-color: ${c.base00} !important;                   /* фон окна и полосы вкладок */
+          --lwt-text-color: ${c.base04} !important;
+          --toolbar-bgcolor: ${c.base01} !important;                    /* панель с адресной строкой */
+          --toolbar-color: ${c.base04} !important;
+          --toolbar-field-background-color: ${c.base00} !important;     /* адресная строка */
+          --toolbar-field-color: ${c.base05} !important;
+          --toolbar-field-focus-background-color: ${c.base00} !important;
+          --toolbar-field-focus-color: ${c.base06} !important;
+          --toolbar-field-focus-border-color: ${c.base0C} !important;
+          --tab-selected-bgcolor: ${c.base03} !important;               /* активная вкладка */
+          --tab-selected-textcolor: ${c.base06} !important;
+          --tab-loading-fill: ${c.base0C} !important;
+          --arrowpanel-background: ${c.base01} !important;              /* выпадающие меню и панели */
+          --arrowpanel-color: ${c.base04} !important;
+          --arrowpanel-border-color: ${c.base03} !important;
+          --arrowpanel-dimmed: ${c.base02} !important;
+          --sidebar-background-color: ${c.base00} !important;
+          --sidebar-text-color: ${c.base04} !important;
+          --autocomplete-popup-background: ${c.base01} !important;      /* список подсказок */
+          --autocomplete-popup-color: ${c.base04} !important;
+          --autocomplete-popup-highlight-background: ${c.base03} !important;
+          --autocomplete-popup-highlight-color: ${c.base06} !important;
+          --focus-outline-color: ${c.base0C} !important;
+          --toolbarbutton-icon-fill: ${c.base04} !important;            /* иконки кнопок */
         }
 
         /* Переменные Firefox 155 действуют не везде, поэтому красим основные области напрямую */
         #navigator-toolbox,
         #TabsToolbar,
         #titlebar {
-          background-color: #2e3440 !important;
-          color: #d8dee9 !important;
+          background-color: ${c.base00} !important;
+          color: ${c.base04} !important;
         }
         #nav-bar,
         #PersonalToolbar {
-          background-color: #3b4252 !important;
-          color: #d8dee9 !important;
+          background-color: ${c.base01} !important;
+          color: ${c.base04} !important;
         }
         #urlbar-background,
         #searchbar {
-          background-color: #2e3440 !important;
-          border-color: #4c566a !important;
+          background-color: ${c.base00} !important;
+          border-color: ${c.base03} !important;
         }
         #urlbar[focused] > #urlbar-background {
-          border-color: #88c0d0 !important;
+          border-color: ${c.base0C} !important;
         }
         .tabbrowser-tab {
-          color: #d8dee9 !important;
+          color: ${c.base04} !important;
         }
         .tab-background[selected] {
-          background-color: #4c566a !important;
+          background-color: ${c.base03} !important;
         }
         .tabbrowser-tab[selected] {
-          color: #eceff4 !important;
+          color: ${c.base06} !important;
         }
         .urlbarView,
         .urlbarView-row[selected] {
-          color: #d8dee9 !important;
+          color: ${c.base04} !important;
         }
         .urlbarView {
-          background-color: #3b4252 !important;
+          background-color: ${c.base01} !important;
         }
         .urlbarView-row[selected] {
-          background-color: #4c566a !important;
+          background-color: ${c.base03} !important;
         }
       '';
 
       userContent = ''
         @-moz-document url-prefix("about:") {
           :root {
-            --in-content-page-background: #2e3440 !important;
-            --in-content-page-color: #d8dee9 !important;
-            --in-content-box-background: #3b4252 !important;
-            --in-content-box-border-color: #4c566a !important;
-            --in-content-primary-button-background: #88c0d0 !important;
-            --in-content-primary-button-text-color: #2e3440 !important;
-            --in-content-link-color: #88c0d0 !important;
-            --in-content-accent-color: #88c0d0 !important;
+            --in-content-page-background: ${c.base00} !important;
+            --in-content-page-color: ${c.base04} !important;
+            --in-content-box-background: ${c.base01} !important;
+            --in-content-box-border-color: ${c.base03} !important;
+            --in-content-primary-button-background: ${c.base0C} !important;
+            --in-content-primary-button-text-color: ${c.base00} !important;
+            --in-content-link-color: ${c.base0C} !important;
+            --in-content-accent-color: ${c.base0C} !important;
           }
         }
       '';
@@ -215,7 +217,7 @@
         "browser.urlbar.suggest.mdn" = false;            # не подсказывать статьи MDN
         "browser.urlbar.suggest.clipboard" = false;      # не предлагать адрес из буфера обмена
 
-        # --- Тема: Nord ---
+        # --- Тема (цвета из Stylix) ---
         "browser.theme.toolbar-theme" = 0;                                # панели браузера тёмные независимо от системной темы (0 тёмная, 1 светлая, 2 как в системе)
         "browser.theme.content-theme" = 0;                                # меню и внутренние страницы тёмные
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;     # разрешить userChrome.css / userContent.css
