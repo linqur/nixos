@@ -15,6 +15,11 @@
         focus-follows-mouse
     }
 
+    output "Virtual-1" {
+        mode custom=true "2560x1600@240"
+        scale 1.3
+    }
+
     layout {
         gaps 10
         struts {
