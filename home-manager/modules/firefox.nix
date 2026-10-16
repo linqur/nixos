@@ -80,6 +80,11 @@
         "app.normandy.enabled" = false;                               # отключить удалённое изменение настроек (Normandy)
         "datareporting.healthreport.uploadEnabled" = false;           # не отправлять отчёт о состоянии браузера
         "browser.crashReports.unsubmittedCheck.autoSubmit2" = false;  # не отправлять отчёты о падениях автоматически
+
+        "browser.urlbar.suggest.topsites" = false;       # Shortcuts: плитки частых сайтов в подсказках
+        "browser.urlbar.suggest.recentsearches" = false; # Recent searches: недавние поисковые запросы
+        "browser.urlbar.suggest.engines" = false;        # Suggest search engines: предложения поисковиков
+        "browser.urlbar.suggest.quickactions" = false;   # Quick actions: быстрые действия вроде «очистить историю»
       };
     };
   };
