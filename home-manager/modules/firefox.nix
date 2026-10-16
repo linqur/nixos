@@ -89,6 +89,47 @@
           --autocomplete-popup-highlight-background: #4c566a !important;
           --autocomplete-popup-highlight-color: #eceff4 !important;
           --focus-outline-color: #88c0d0 !important;
+          --toolbarbutton-icon-fill: #d8dee9 !important;            /* иконки кнопок */
+        }
+
+        /* Переменные Firefox 155 действуют не везде, поэтому красим основные области напрямую */
+        #navigator-toolbox,
+        #TabsToolbar,
+        #titlebar {
+          background-color: #2e3440 !important;
+          color: #d8dee9 !important;
+        }
+        #nav-bar,
+        #PersonalToolbar {
+          background-color: #3b4252 !important;
+          color: #d8dee9 !important;
+        }
+        #urlbar-background,
+        #searchbar {
+          background-color: #2e3440 !important;
+          border-color: #4c566a !important;
+        }
+        #urlbar[focused] > #urlbar-background {
+          border-color: #88c0d0 !important;
+        }
+        .tabbrowser-tab {
+          color: #d8dee9 !important;
+        }
+        .tab-background[selected] {
+          background-color: #4c566a !important;
+        }
+        .tabbrowser-tab[selected] {
+          color: #eceff4 !important;
+        }
+        .urlbarView,
+        .urlbarView-row[selected] {
+          color: #d8dee9 !important;
+        }
+        .urlbarView {
+          background-color: #3b4252 !important;
+        }
+        .urlbarView-row[selected] {
+          background-color: #4c566a !important;
         }
       '';
 
@@ -175,7 +216,8 @@
         "browser.urlbar.suggest.clipboard" = false;      # не предлагать адрес из буфера обмена
 
         # --- Тема: Nord ---
-        "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";  # встроенная тёмная тема как основа под наш CSS
+        "browser.theme.toolbar-theme" = 0;                                # панели браузера тёмные независимо от системной темы (0 тёмная, 1 светлая, 2 как в системе)
+        "browser.theme.content-theme" = 0;                                # меню и внутренние страницы тёмные
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;     # разрешить userChrome.css / userContent.css
         "layout.css.prefers-color-scheme.content-override" = 0;           # сайты с тёмной темой показывают её (0 тёмная, 1 светлая, 2 как в системе)
       };
