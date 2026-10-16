@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
 {
   programs.vscode = {
@@ -7,7 +7,7 @@
         jnoortheen.nix-ide
       ];
       userSettings = {
-        "editor.fontSize" = 14;
+        "editor.fontSize" = lib.mkForce 14;  # перебить размер, который задаёт Stylix
       };
     };
   };
