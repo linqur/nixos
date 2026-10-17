@@ -1,11 +1,13 @@
 {
   imports = [
+    ./firefox.nix
     ./foot.nix
     ./fuzzel.nix
-    ./firefox.nix
     ./git.nix
+    ./gtk.nix
     ./keepassxc.nix
     ./niri.nix
+    ./qt.nix
     ./vscode.nix
   ];
 }
