@@ -1,10 +1,8 @@
-{ config, ... }:
-
 let
-  c = config.lib.stylix.colors.withHashtag;  # палитра из Stylix
+  n = import ../../lib/nord.nix;  # официальная палитра Nord
 in
 {
-  # Цвета из Stylix + геометрия как в Hyprland (gaps_in 5 / gaps_out 10 / border 2 / rounding 6)
+  # Цвета Nord + геометрия как в Hyprland (gaps_in 5 / gaps_out 10 / border 2 / rounding 6)
   xdg.configFile."niri/config.kdl".text = ''
     input {
         keyboard {
@@ -34,7 +32,7 @@ in
             bottom 5
         }
 
-        background-color "${c.base00}"
+        background-color "${n.nord0}"
 
         default-column-width { proportion 0.5; }
 
@@ -44,9 +42,9 @@ in
 
         border {
             width 2
-            active-color "${c.base03}"
-            inactive-color "${c.base01}"
-            urgent-color "${c.base08}"
+            active-color "${n.nord3}"
+            inactive-color "${n.nord1}"
+            urgent-color "${n.nord11}"
         }
 
         shadow {

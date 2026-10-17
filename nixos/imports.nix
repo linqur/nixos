@@ -2,6 +2,7 @@
   imports = [
     ./audio.nix
     ./bash.nix
+    ./console.nix
     ./fonts.nix
     ./home-manager.nix
     ./initrd.nix
@@ -15,7 +16,6 @@
     ./nix.nix
     ./packages.nix
     ./stateVersion.nix
-    ./stylix.nix
     ./timezone.nix
     ./user.nix
   ];

@@ -1,7 +1,5 @@
-{ config, ... }:
-
 let
-  c = config.lib.stylix.colors.withHashtag;  # палитра из Stylix
+  n = import ../../lib/nord.nix;  # официальная палитра Nord
 in
 {
   programs.firefox = {
@@ -65,90 +63,91 @@ in
     profiles.default = {
       isDefault = true;
 
-      # Цвета берутся из Stylix: base00-03 фон от тёмного к светлому, base04-06 текст, base0C акцент
+      # Nord по гайдлайнам: Polar Night (nord0-2) — фоны, Snow Storm (nord4-6) — текст, nord8 — главный акцент
       userChrome = ''
         :root {
-          --lwt-accent-color: ${c.base00} !important;                   /* фон окна и полосы вкладок */
-          --lwt-text-color: ${c.base04} !important;
-          --toolbar-bgcolor: ${c.base01} !important;                    /* панель с адресной строкой */
-          --toolbar-color: ${c.base04} !important;
-          --toolbar-field-background-color: ${c.base00} !important;     /* адресная строка */
-          --toolbar-field-color: ${c.base05} !important;
-          --toolbar-field-focus-background-color: ${c.base00} !important;
-          --toolbar-field-focus-color: ${c.base06} !important;
-          --toolbar-field-focus-border-color: ${c.base0C} !important;
-          --tab-selected-bgcolor: ${c.base03} !important;               /* активная вкладка */
-          --tab-selected-textcolor: ${c.base06} !important;
-          --tab-loading-fill: ${c.base0C} !important;
-          --arrowpanel-background: ${c.base01} !important;              /* выпадающие меню и панели */
-          --arrowpanel-color: ${c.base04} !important;
-          --arrowpanel-border-color: ${c.base03} !important;
-          --arrowpanel-dimmed: ${c.base02} !important;
-          --sidebar-background-color: ${c.base00} !important;
-          --sidebar-text-color: ${c.base04} !important;
-          --autocomplete-popup-background: ${c.base01} !important;      /* список подсказок */
-          --autocomplete-popup-color: ${c.base04} !important;
-          --autocomplete-popup-highlight-background: ${c.base03} !important;
-          --autocomplete-popup-highlight-color: ${c.base06} !important;
-          --focus-outline-color: ${c.base0C} !important;
-          --toolbarbutton-icon-fill: ${c.base04} !important;            /* иконки кнопок */
+          --lwt-accent-color: ${n.nord0} !important;                    /* фон окна и полосы вкладок */
+          --lwt-text-color: ${n.nord4} !important;
+          --toolbar-bgcolor: ${n.nord1} !important;                     /* панель с адресной строкой */
+          --toolbar-color: ${n.nord4} !important;
+          --toolbar-field-background-color: ${n.nord0} !important;      /* адресная строка */
+          --toolbar-field-color: ${n.nord4} !important;
+          --toolbar-field-focus-background-color: ${n.nord0} !important;
+          --toolbar-field-focus-color: ${n.nord6} !important;
+          --toolbar-field-focus-border-color: ${n.nord8} !important;
+          --tab-selected-bgcolor: ${n.nord2} !important;                /* активная вкладка */
+          --tab-selected-textcolor: ${n.nord6} !important;
+          --tab-loading-fill: ${n.nord8} !important;
+          --arrowpanel-background: ${n.nord1} !important;               /* выпадающие меню и панели */
+          --arrowpanel-color: ${n.nord4} !important;
+          --arrowpanel-border-color: ${n.nord2} !important;
+          --arrowpanel-dimmed: ${n.nord2} !important;
+          --sidebar-background-color: ${n.nord0} !important;
+          --sidebar-text-color: ${n.nord4} !important;
+          --autocomplete-popup-background: ${n.nord1} !important;       /* список подсказок */
+          --autocomplete-popup-color: ${n.nord4} !important;
+          --autocomplete-popup-highlight-background: ${n.nord2} !important;
+          --autocomplete-popup-highlight-color: ${n.nord6} !important;
+          --focus-outline-color: ${n.nord8} !important;
+          --toolbarbutton-icon-fill: ${n.nord4} !important;             /* иконки кнопок */
         }
 
         /* Переменные Firefox 155 действуют не везде, поэтому красим основные области напрямую */
         #navigator-toolbox,
         #TabsToolbar,
         #titlebar {
-          background-color: ${c.base00} !important;
-          color: ${c.base04} !important;
+          background-color: ${n.nord0} !important;
+          color: ${n.nord4} !important;
         }
         #nav-bar,
         #PersonalToolbar {
-          background-color: ${c.base01} !important;
-          color: ${c.base04} !important;
+          background-color: ${n.nord1} !important;
+          color: ${n.nord4} !important;
         }
         #urlbar-background,
         #searchbar {
-          background-color: ${c.base00} !important;
-          border-color: ${c.base03} !important;
+          background-color: ${n.nord0} !important;
+          border-color: ${n.nord2} !important;
         }
         #urlbar[focused] > #urlbar-background {
-          border-color: ${c.base0C} !important;
+          border-color: ${n.nord8} !important;
         }
         .tabbrowser-tab {
-          color: ${c.base04} !important;
+          color: ${n.nord4} !important;
         }
         .tab-background[selected] {
-          background-color: ${c.base03} !important;
+          background-color: ${n.nord2} !important;
         }
         .tabbrowser-tab[selected] {
-          color: ${c.base06} !important;
+          color: ${n.nord6} !important;
         }
         .urlbarView,
         .urlbarView-row[selected] {
-          color: ${c.base04} !important;
+          color: ${n.nord4} !important;
         }
         .urlbarView {
-          background-color: ${c.base01} !important;
+          background-color: ${n.nord1} !important;
         }
         .urlbarView-row[selected] {
-          background-color: ${c.base03} !important;
+          background-color: ${n.nord2} !important;
         }
       '';
 
       userContent = ''
         @-moz-document url-prefix("about:") {
           :root {
-            --in-content-page-background: ${c.base00} !important;
-            --in-content-page-color: ${c.base04} !important;
-            --in-content-box-background: ${c.base01} !important;
-            --in-content-box-border-color: ${c.base03} !important;
-            --in-content-primary-button-background: ${c.base0C} !important;
-            --in-content-primary-button-text-color: ${c.base00} !important;
-            --in-content-link-color: ${c.base0C} !important;
-            --in-content-accent-color: ${c.base0C} !important;
+            --in-content-page-background: ${n.nord0} !important;
+            --in-content-page-color: ${n.nord4} !important;
+            --in-content-box-background: ${n.nord1} !important;
+            --in-content-box-border-color: ${n.nord2} !important;
+            --in-content-primary-button-background: ${n.nord8} !important;
+            --in-content-primary-button-text-color: ${n.nord0} !important;
+            --in-content-link-color: ${n.nord8} !important;
+            --in-content-accent-color: ${n.nord8} !important;
           }
         }
       '';
+
       settings = {
         # --- Проверка орфографии ---
         "layout.spellcheck.default" = 2;                # проверять и однострочные поля, не только многострочные
@@ -217,7 +216,8 @@ in
         "browser.urlbar.suggest.mdn" = false;            # не подсказывать статьи MDN
         "browser.urlbar.suggest.clipboard" = false;      # не предлагать адрес из буфера обмена
 
-        # --- Тема (цвета из Stylix) ---
+        # --- Тема (Nord) ---
+        "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";  # встроенная тёмная тема Firefox, поверх неё работают цвета Nord
         "browser.theme.toolbar-theme" = 0;                                # панели браузера тёмные независимо от системной темы (0 тёмная, 1 светлая, 2 как в системе)
         "browser.theme.content-theme" = 0;                                # меню и внутренние страницы тёмные
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;     # разрешить userChrome.css / userContent.css
