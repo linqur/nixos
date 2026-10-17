@@ -3,6 +3,7 @@
     ./audio.nix
     ./bash.nix
     ./console.nix
+    ./dconf.nix
     ./fonts.nix
     ./home-manager.nix
     ./initrd.nix

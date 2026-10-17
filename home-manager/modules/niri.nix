@@ -1,3 +1,5 @@
+{ config, ... }:
+
 let
   n = import ../../lib/nord.nix;  # официальная палитра Nord
 in
@@ -50,6 +52,11 @@ in
         shadow {
             off
         }
+    }
+
+    cursor {
+        xcursor-theme "${config.home.pointerCursor.name}"
+        xcursor-size ${toString config.home.pointerCursor.size}
     }
 
     prefer-no-csd
