@@ -59,6 +59,8 @@ in
         clip-to-geometry true
     }
 
+    spawn-at-startup "dbar"
+
     hotkey-overlay {
         skip-at-startup
     }
