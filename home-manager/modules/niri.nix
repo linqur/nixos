@@ -54,12 +54,12 @@ in
 
     prefer-no-csd
 
+    spawn-at-startup "waybar"
+
     window-rule {
         geometry-corner-radius 6
         clip-to-geometry true
     }
-
-    spawn-at-startup "dbar"
 
     hotkey-overlay {
         skip-at-startup

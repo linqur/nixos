@@ -1,7 +1,6 @@
 {
   imports = [
     ./firefox.nix
-    ./dbar.nix
     ./foot.nix
     ./fuzzel.nix
     ./git.nix
@@ -10,5 +9,6 @@
     ./niri.nix
     ./qt.nix
     ./vscode.nix
+    ./waybar.nix
   ];
 }

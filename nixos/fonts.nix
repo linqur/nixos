@@ -4,6 +4,7 @@
   fonts = {
     packages = with pkgs; [
       jetbrains-mono
+      nerd-fonts.symbols-only  # иконки для Waybar
       noto-fonts           # Noto Sans/Serif с кириллицей
       noto-fonts-color-emoji
     ];
