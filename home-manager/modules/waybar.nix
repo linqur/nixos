@@ -12,21 +12,10 @@ in
       {
         layer = "top";
 
-        modules-left = [ "group/metrics" ];
+        # Слева метрики системы, справа статусы; у каждого элемента своя плашка
+        modules-left = [ "battery" "temperature" ];
         modules-center = [ "niri/workspaces" ];
-        modules-right = [ "tray" "group/status" ];
-
-        # Метрики системы: батарея и температура CPU в одной плашке
-        "group/metrics" = {
-          orientation = "horizontal";
-          modules = [ "battery" "temperature" ];
-        };
-
-        # Статусы: раскладка и часы в одной плашке
-        "group/status" = {
-          orientation = "horizontal";
-          modules = [ "niri/language" "clock" ];
-        };
+        modules-right = [ "tray" "niri/language" "clock" ];
 
         battery = {
           states = {
@@ -88,35 +77,32 @@ in
         color: ${n.nord8};
       }
 
-      /* Отступы по краям: те же 15px, что у окон niri (struts 5 + gaps 10) */
+      /* Отступы по краям: 15px, как у окон niri (struts 5 + gaps 10); 6px из них даёт margin плашки */
       .modules-left {
-        margin-left: 15px;
+        margin-left: 9px;
       }
 
       .modules-right {
         margin-right: 15px;
       }
 
-      /* Плашки: «висят» над фоном niri */
-      #metrics,
-      #workspaces,
+      /* Плашки: у каждого элемента своя, «висят» над фоном niri */
+      #battery,
+      #temperature,
       #tray,
-      #status {
-        margin-top: 5px;
-        padding: 4px 6px;
+      #language,
+      #clock {
+        margin: 5px 0 0 6px;
+        padding: 4px 12px;
         border-radius: 8px;
         background: ${n.nord1};
       }
 
-      #tray {
-        margin-right: 6px;
-      }
-
-      #battery,
-      #temperature,
-      #language,
-      #clock {
-        padding: 0 6px;
+      #workspaces {
+        margin-top: 5px;
+        padding: 4px 6px;
+        border-radius: 8px;
+        background: ${n.nord1};
       }
 
       #workspaces button {
