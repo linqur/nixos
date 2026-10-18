@@ -1,10 +1,12 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   # lexical sorted
-  home.packages = with pkgs; [
+  home.packages = (with pkgs; [
     htop
     fastfetch
+  ]) ++ [
+    inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.claude-code
   ];
 
   # lexical sorted
