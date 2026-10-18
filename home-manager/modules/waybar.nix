@@ -18,6 +18,7 @@ in
         modules-right = [ "tray" "niri/language" "clock" ];
 
         battery = {
+          interval = 60;
           states = {
             warning = 30;
             critical = 15;
@@ -109,18 +110,15 @@ in
         padding: 0 6px;
         min-width: 0;
         background: transparent;
-        color: ${n.nord4};
-        opacity: 0.5;
+        color: alpha(${n.nord4}, 0.5);
       }
 
       #workspaces button.focused {
         color: ${n.nord8};
-        opacity: 1;
       }
 
       #workspaces button.urgent {
         color: ${n.nord11};
-        opacity: 1;
       }
 
       #battery.warning:not(.charging) {
