@@ -8,7 +8,7 @@
       };
 
       GUI = {
-        ApplicationTheme = "dark";
+        ApplicationTheme = "classic";  # системный Qt-стиль (Kvantum Nordic-Solid из qt.nix), а не встроенная тема KeePassXC
       };
 
       Security = {
