@@ -59,8 +59,9 @@ in
           icon-size = 16;
         };
 
+        # format-<lang> подставляется в «{}», именованные плейсхолдеры (например {short}) тут не работают
         "niri/language" = {
-          format = "{short}";
+          format = "{}";
           format-en = "EN";
           format-ru = "RU";
         };
