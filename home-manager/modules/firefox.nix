@@ -1,8 +1,12 @@
+{ config, ... }:
+
 let
   n = import ../../lib/nord.nix;  # официальная палитра Nord
 in
 {
   programs.firefox = {
+    configPath = "${config.xdg.configHome}/mozilla/firefox";  # профиль в ~/.config вместо ~/.mozilla
+
     # --- Телеметрия и лишние сервисы ---
     policies = {
       DisableTelemetry = true;          # не отправлять Mozilla данные об использовании

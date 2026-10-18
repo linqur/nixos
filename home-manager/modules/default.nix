@@ -8,6 +8,7 @@
     ./keepassxc.nix
     ./niri.nix
     ./qt.nix
+    ./ssh.nix
     ./vscode.nix
     ./waybar.nix
   ];

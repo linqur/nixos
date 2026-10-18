@@ -18,5 +18,7 @@
 
     # С stateVersion 26.05 GTK 4 не наследует тему GTK 3 сам, указываем явно
     gtk4.theme = config.gtk.theme;
+
+    gtk2.configLocation = "${config.xdg.configHome}/gtk-2.0/gtkrc";  # вместо ~/.gtkrc-2.0
   };
 }

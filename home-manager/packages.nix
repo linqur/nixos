@@ -13,5 +13,6 @@
   programs.fuzzel.enable = true;
   programs.git.enable = true;
   programs.keepassxc.enable = true;
+  programs.ssh.enable = true;
   programs.vscode.enable = true;
 }
