@@ -77,7 +77,7 @@ in
         Mod+R { spawn "fuzzel"; }
         Mod+W { spawn "firefox"; }
         Mod+Escape { close-window; }
-        Mod+F4 { spawn "sh" "-c" "kill -9 $(niri msg -j focused-window | jq .pid)"; }
+        Mod+F4 { spawn "sh" "-c" "kill -9 $(niri msg -j focused-window | grep -Eo '.pid.:[0-9]+' | grep -Eo '[0-9]+$')"; }
         Mod+Shift+Escape { quit; }
         Mod+V { toggle-window-floating; }
         Mod+F { maximize-column; }
