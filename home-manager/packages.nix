@@ -10,6 +10,7 @@
   ];
 
   # lexical sorted
+  programs.bash.enable = true;  # ~/.profile подключает home.sessionVariables
   programs.firefox.enable = true;
   programs.foot.enable = true;
   programs.fuzzel.enable = true;
