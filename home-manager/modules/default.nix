@@ -6,11 +6,15 @@
     ./fuzzel.nix
     ./git.nix
     ./gtk.nix
+    ./imv.nix
     ./keepassxc.nix
+    ./mime.nix
+    ./mpv.nix
     ./niri.nix
     ./qt.nix
     ./ssh.nix
     ./vscode.nix
     ./waybar.nix
+    ./zathura.nix
   ];
 }

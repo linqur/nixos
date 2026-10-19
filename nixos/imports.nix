@@ -10,7 +10,6 @@
     ./kernel.nix
     ./loader.nix
     ./locale.nix
-    ./mime.nix
     ./net.nix
     ./nh.nix
     ./niri.nix

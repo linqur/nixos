@@ -17,6 +17,8 @@
     sessionVariables.CLAUDE_CONFIG_DIR = "${config.xdg.configHome}/claude";
   };
 
+  programs.bash.shellAliases.cat = "bat";
+  
   # Папки перед файлами в GTK-диалогах выбора файлов
   dconf.settings = {
     "org/gtk/settings/file-chooser".sort-directories-first = true;
