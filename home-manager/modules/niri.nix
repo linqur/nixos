@@ -36,6 +36,13 @@ in
 
         default-column-width { proportion 0.5; }
 
+        preset-column-widths {
+            proportion 0.25
+            proportion 0.5
+            proportion 0.75
+            proportion 1.0
+        }
+
         focus-ring {
             off
         }
@@ -70,6 +77,7 @@ in
         Mod+R { spawn "fuzzel"; }
         Mod+W { spawn "firefox"; }
         Mod+Escape { close-window; }
+        Mod+F4 { spawn "sh" "-c" "kill -9 $(niri msg -j focused-window | jq .pid)"; }
         Mod+Shift+Escape { quit; }
         Mod+V { toggle-window-floating; }
         Mod+F { maximize-column; }
@@ -86,8 +94,8 @@ in
         Mod+Shift+Up { move-window-up-or-to-workspace-up; }
 
         // Размер
-        Mod+Minus { set-column-width "-10%"; }
-        Mod+Equal { set-column-width "+10%"; }
+        Mod+Minus { switch-preset-column-width-back; }
+        Mod+Equal { switch-preset-column-width; }
 
         // Рабочие столы
         Mod+1 { focus-workspace 1; }
@@ -112,7 +120,7 @@ in
         Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
         Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
 
-        Print { screenshot; }
+        Mod+Print { screenshot; }
     }
   '';
 }
