@@ -75,15 +75,15 @@ in
         Mod+F { maximize-column; }
         Mod+Shift+F { fullscreen-window; }
 
-        // Фокус и перемещение (как в Hyprland: hjkl)
-        Mod+H { focus-column-left; }
-        Mod+L { focus-column-right; }
-        Mod+J { focus-window-or-workspace-down; }
-        Mod+K { focus-window-or-workspace-up; }
-        Mod+Shift+H { move-column-left; }
-        Mod+Shift+L { move-column-right; }
-        Mod+Shift+J { move-window-down-or-to-workspace-down; }
-        Mod+Shift+K { move-window-up-or-to-workspace-up; }
+        // Фокус и перемещение (стрелки)
+        Mod+Left { focus-column-left; }
+        Mod+Right { focus-column-right; }
+        Mod+Down { focus-window-or-workspace-down; }
+        Mod+Up { focus-window-or-workspace-up; }
+        Mod+Shift+Left { move-column-left; }
+        Mod+Shift+Right { move-column-right; }
+        Mod+Shift+Down { move-window-down-or-to-workspace-down; }
+        Mod+Shift+Up { move-window-up-or-to-workspace-up; }
 
         // Размер
         Mod+Minus { set-column-width "-10%"; }
