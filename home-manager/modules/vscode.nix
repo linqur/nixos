@@ -41,6 +41,7 @@
         "go.useLanguageServer" = true;
         "go.alternateTools" = { gopls = "${pkgs.gopls}/bin/gopls"; };  # gopls из Nix, расширение не пытается его скачать
         "rust-analyzer.server.path" = "${pkgs.rust-analyzer}/bin/rust-analyzer";
+        "rust-analyzer.server.extraEnv" = { RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}"; };  # исходники std: в rustc из nixpkgs их нет, без них не работают переходы и подсказки по std
 
         # --- rust-analyzer ---
         "rust-analyzer.checkOnSave" = true;                 # cargo check при каждом сохранении
@@ -157,6 +158,6 @@
     };
   };
 
-  # gopls для расширения Go (go и rustc/cargo ставятся отдельно)
+  # gopls для расширения Go (go — в go.nix, rustc/cargo — в rust.nix)
   home.packages = [ pkgs.gopls ];
 }

@@ -5,6 +5,7 @@
     ./foot.nix
     ./fuzzel.nix
     ./git.nix
+    ./go.nix
     ./gtk.nix
     ./imv.nix
     ./keepassxc.nix
@@ -12,6 +13,7 @@
     ./mpv.nix
     ./niri.nix
     ./qt.nix
+    ./rust.nix
     ./ssh.nix
     ./vscode.nix
     ./waybar.nix
