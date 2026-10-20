@@ -6,6 +6,7 @@
     ./fuzzel.nix
     ./git.nix
     ./go.nix
+    ./helix.nix
     ./gtk.nix
     ./imv.nix
     ./keepassxc.nix

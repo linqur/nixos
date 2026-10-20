@@ -5,6 +5,7 @@
     ./console.nix
     ./dconf.nix
     ./docker.nix
+    ./editor.nix
     ./fonts.nix
     ./home-manager.nix
     ./init.nix

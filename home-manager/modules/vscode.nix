@@ -1,4 +1,8 @@
-{ pkgs, unstable, ... }:
+{ config, pkgs, unstable, ... }:
+
+let
+  code = "${config.programs.vscode.package}/bin/code";
+in
 
 {
   programs.vscode = {
@@ -123,6 +127,25 @@
         "git.detectSubmodules" = true;                  # видеть подмодули
         "git.decorations.enabled" = true;               # красить файлы в дереве по статусу git
         "git.openRepositoryInParentFolders" = "never";  # не искать репозиторий в родительских каталогах
+
+        # --- Git открывает редактор в VS Code, если запущен из VS Code (снаружи остаётся EDITOR = hx) ---
+        "git.useEditorAsCommitInput" = true;  # из интерфейса: сообщения коммитов, merge, rebase --continue — вкладкой VS Code
+        "git.terminalGitEditor" = true;       # во встроенном терминале GIT_EDITOR = VS Code: commit, rebase -i, merge, tag -a
+        "git.mergeEditor" = true;             # конфликты открываются в трёхпанельном редакторе слияния
+        # git mergetool / difftool во встроенном терминале — через VS Code; GIT_CONFIG_* действуют только в этом терминале
+        "terminal.integrated.env.linux" = {
+          GIT_CONFIG_COUNT = "5";
+          GIT_CONFIG_KEY_0 = "merge.tool";
+          GIT_CONFIG_VALUE_0 = "vscode";
+          GIT_CONFIG_KEY_1 = "mergetool.vscode.cmd";
+          GIT_CONFIG_VALUE_1 = ''${code} --wait --merge "$REMOTE" "$LOCAL" "$BASE" "$MERGED"'';
+          GIT_CONFIG_KEY_2 = "mergetool.keepBackup";  # не оставлять *.orig после разрешения конфликта
+          GIT_CONFIG_VALUE_2 = "false";
+          GIT_CONFIG_KEY_3 = "diff.tool";
+          GIT_CONFIG_VALUE_3 = "vscode";
+          GIT_CONFIG_KEY_4 = "difftool.vscode.cmd";
+          GIT_CONFIG_VALUE_4 = ''${code} --wait --diff "$LOCAL" "$REMOTE"'';
+        };
 
         # --- Сеть и телеметрия ---
         "telemetry.telemetryLevel" = "off";                       # не отправлять Microsoft данные об использовании

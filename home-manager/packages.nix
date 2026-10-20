@@ -21,6 +21,7 @@
   programs.fuzzel.enable = true;
   programs.git.enable = true;
   programs.go.enable = true;
+  programs.helix.enable = true;
   programs.imv.enable = true;
   programs.keepassxc.enable = true;
   programs.mpv.enable = true;
