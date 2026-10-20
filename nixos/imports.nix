@@ -21,5 +21,6 @@
     ./stateVersion.nix
     ./timezone.nix
     ./user.nix
+    ./virt.nix
   ];
 }
