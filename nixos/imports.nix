@@ -6,10 +6,12 @@
     ./dconf.nix
     ./fonts.nix
     ./home-manager.nix
+    ./init.nix
     ./initrd.nix
     ./kernel.nix
     ./loader.nix
     ./locale.nix
+    ./logrotate.nix
     ./net.nix
     ./nh.nix
     ./niri.nix
