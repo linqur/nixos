@@ -4,6 +4,7 @@
     ./bash.nix
     ./console.nix
     ./dconf.nix
+    ./docker.nix
     ./fonts.nix
     ./home-manager.nix
     ./init.nix

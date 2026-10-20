@@ -8,7 +8,10 @@
 
     users.${user} = {
       isNormalUser = true;
-      extraGroups = [ "wheel" "networkmanager" "docker" ];
+      extraGroups = [ "wheel" "networkmanager" ];
+      # тот же диапазон, что раньше выдавал update-users-groups.pl (userborn сам не выдаёт)
+      subUidRanges = [{ startUid = 100000; count = 65536; }];
+      subGidRanges = [{ startGid = 100000; count = 65536; }];
     };
   };
 }
