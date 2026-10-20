@@ -13,19 +13,41 @@ let
   projectsLink = "/home/${user}/projects";
 
   # запускается от dockdev через sudo
-  dockdevDocker = pkgs.writeShellScript "dockdev-docker" ''
+  mkDockdevExec = name: bin: pkgs.writeShellScript "dockdev-${name}" ''
     export DOCKER_HOST=unix://${sock}
-    exec ${pkgs.docker}/bin/docker "$@"
+    # lazydocker/dive сами зовут docker (compose, build): обёртка из PATH не годится, sudo в dockdev её не пустит
+    export PATH=${pkgs.docker}/bin:$PATH
+    exec ${bin} "$@"
   '';
 
-  # команда docker для основного пользователя, работает и в скриптах/IDE.
+  dockdevDocker = mkDockdevExec "docker" "${pkgs.docker}/bin/docker";
+
+  # клиенты, которые ходят в сокет напрямую; сам сокет доступен только dockdev
+  dockdevTools = {
+    docker = dockdevDocker;
+    lazydocker = mkDockdevExec "lazydocker" "${pkgs.lazydocker}/bin/lazydocker";
+    dive = mkDockdevExec "dive" "${pkgs.dive}/bin/dive";
+  };
+
+  daemonJson = pkgs.writeText "daemon.json" (builtins.toJSON {
+    # бинарный формат со сжатием; json-file без ротации растёт бесконечно. Действует на новые контейнеры
+    log-driver = "local";
+    log-opts = { max-size = "10m"; max-file = "3"; };
+    # иначе контейнеры наследуют LimitNOFILE=infinity, на нём часть софта медленно стартует и ест память
+    default-ulimits.nofile = { Name = "nofile"; Soft = 1024; Hard = 524288; };
+    # кэш BuildKit чистит сам демон, пока работает; корневой раздел всего 34G
+    builder.gc = { enabled = true; defaultKeepStorage = "8GB"; };
+    max-concurrent-downloads = 6;
+  });
+
+  # команды для основного пользователя, работают и в скриптах/IDE.
   # Клиент работает от dockdev, а тот путь через симлинк в доме не пройдёт: переходим в реальный
   # каталог и переписываем пути аргументов (-v, -f, контекст сборки) на ${projects}
-  dockerWrapper = pkgs.writeShellScriptBin "docker" ''
+  mkWrapper = name: exec: pkgs.writeShellScriptBin name ''
     cd -P . 2>/dev/null || true
     args=()
     for a in "$@"; do args+=("''${a//"${projectsLink}"/"${projects}"}"); done
-    exec /run/wrappers/bin/sudo -u ${dockUser} -H -- ${dockdevDocker} "''${args[@]}"
+    exec /run/wrappers/bin/sudo -u ${dockUser} -H -- ${exec} "''${args[@]}"
   '';
 in
 {
@@ -46,10 +68,10 @@ in
   security.sudo.extraRules = [{
     users = [ user ];
     runAs = dockUser;
-    commands = [{ command = "${dockdevDocker}"; options = [ "NOPASSWD" ]; }];
+    commands = map (exec: { command = "${exec}"; options = [ "NOPASSWD" ]; }) (builtins.attrValues dockdevTools);
   }];
 
-  environment.systemPackages = [ dockerWrapper ];
+  environment.systemPackages = builtins.attrValues (builtins.mapAttrs mkWrapper dockdevTools);
 
   systemd.user.sockets.docker = {
     description = "Docker socket (rootless, lazy)";
@@ -83,7 +105,7 @@ in
     };
     serviceConfig = {
       Type = "notify";
-      ExecStart = "${pkgs.docker}/bin/dockerd-rootless --host=unix://${realSock}";
+      ExecStart = "${pkgs.docker}/bin/dockerd-rootless --config-file=${daemonJson} --host=unix://${realSock}";
       ExecReload = "${pkgs.procps}/bin/kill -s HUP $MAINPID";
       TimeoutSec = 0;
       RestartSec = 2;
@@ -94,6 +116,27 @@ in
       Delegate = true;
       NotifyAccess = "all";
       KillMode = "mixed";
+    };
+  };
+
+  # чистка 1-го и 15-го числа; сама поднимает демон через сокет, пропущенный запуск догоняется на загрузке
+  systemd.user.services.docker-prune = {
+    description = "Docker prune (rootless)";
+    unitConfig.ConditionUser = dockUser;
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${dockdevDocker} system prune -f --filter until=336h";
+      Nice = 19;
+      IOSchedulingClass = "idle";
+    };
+  };
+
+  systemd.user.timers.docker-prune = {
+    wantedBy = [ "timers.target" ];
+    unitConfig.ConditionUser = dockUser;
+    timerConfig = {
+      OnCalendar = "*-*-01,15 03:00";
+      Persistent = true;
     };
   };
 
