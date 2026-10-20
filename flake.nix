@@ -26,25 +26,25 @@
     homeStateVersion = "26.05";
     system = "x86_64-linux";
   in {
-    nixosConfigurations."home-rog" = nixpkgs.lib.nixosSystem {
-      inherit system;
+    # nixosConfigurations."home-rog" = nixpkgs.lib.nixosSystem {
+    #   inherit system;
 
-      specialArgs = {
-        inherit user stateVersion homeStateVersion inputs;
+    #   specialArgs = {
+    #     inherit user stateVersion homeStateVersion inputs;
 
-        unstable = import nixpkgs-unstable {
-          inherit system;
-          config.allowUnfree = true;
-        };
-        enums = import ./lib/enums.nix;
-      };
+    #     unstable = import nixpkgs-unstable {
+    #       inherit system;
+    #       config.allowUnfree = true;
+    #     };
+    #     enums = import ./lib/enums.nix;
+    #   };
 
-      modules = [
-        disko.nixosModules.disko
-        ./hosts/home-rog/disko.nix
-        ./hosts/home-rog/configuration.nix
-      ];
-    };
+    #   modules = [
+    #     disko.nixosModules.disko
+    #     ./hosts/home-rog/disko.nix
+    #     ./hosts/home-rog/configuration.nix
+    #   ];
+    # };
 
     nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
       inherit system;
