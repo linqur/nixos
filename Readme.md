@@ -43,4 +43,5 @@
 
 - **`system.activationScripts` молча не выполняются.** При добавлении модуля или flake-входа (sops-nix, agenix и т.п.) проверить, не работает ли он через activationScripts: `grep -o 'snippet [^:]*' result/activate`. Сейчас там только то, что nixos-init/userborn/overlay покрывают сами.
 - **Не править `/etc` руками.** Правка ложится в верхний слой overlay и перекрывает версию из всех следующих сборок. Всё — через `environment.etc`.
+- **В chroot (`nixos-install`, `nixos-enter`) пользователей нет**: userborn создаёт `/etc/passwd` только юнитом при загрузке (NixOS/nixpkgs#408507). `install.sh` запускает его вручную перед `passwd`; ставить без него — `passwd: cannot determine your user name`.
 - Первое включение (и откат на поколение без него) — через `nixos-rebuild boot` + перезагрузку, не `switch`. При проблеме — предыдущее поколение в меню systemd-boot.
