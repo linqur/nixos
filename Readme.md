@@ -33,6 +33,11 @@
 
 Работа, которую NixOS по умолчанию делает на каждой загрузке, перенесена на сборку. Цена — несколько правил.
 
+**Компромисс.** NixOS по умолчанию заново утверждает поколение на каждой загрузке: ручная правка, удалённый файл, откат — всё чинится перезагрузкой. Перенос на сборку или на смену поколения это самолечение отключает. Upstream (Perlless/Bashless Activation, NixOS/nixpkgs#267982, #428908) делает похожее ради безопасности и малого closure, а не скорости; общего переключателя «каждая загрузка / один раз при смене поколения» нет.
+
+- Схема «один раз при смене поколения»: юнит запускается, только если `/run/booted-system` не совпадает с сохранённой меткой. Сравнение — на равенство путей, а не номеров, тогда откат на старый UKI тоже вызовет запуск. `ConditionNeedsUpdate=` из systemd не подходит: завязан на `/usr`, которого в NixOS нет.
+- Прежде чем переносить что-то ещё — замерить (`systemd-analyze blame`, `critical-chain`). С nixos-init на загрузке почти ничего не осталось; выигрыш в миллисекундах не стоит потери самолечения.
+
 ### Home Manager активируется только при смене поколения (`nixos/home-manager.nix`)
 
 - Файлы в `~`, которыми управляет Home Manager, при загрузке не восстанавливаются. Удалил или правил руками — вернёт только rebuild с изменениями в Home Manager.
@@ -44,4 +49,18 @@
 - **`system.activationScripts` молча не выполняются.** При добавлении модуля или flake-входа (sops-nix, agenix и т.п.) проверить, не работает ли он через activationScripts: `grep -o 'snippet [^:]*' result/activate`. Сейчас там только то, что nixos-init/userborn/overlay покрывают сами.
 - **Не править `/etc` руками.** Правка ложится в верхний слой overlay и перекрывает версию из всех следующих сборок. Всё — через `environment.etc`.
 - **В chroot (`nixos-install`, `nixos-enter`) пользователей нет**: userborn создаёт `/etc/passwd` только юнитом при загрузке (NixOS/nixpkgs#408507). `install.sh` запускает его вручную перед `passwd`; ставить без него — `passwd: cannot determine your user name`.
+  Удаление `init.nix` из импортов эту ошибку «лечит» не из-за nixos-init: вместе с ним выключается userborn, и пользователей в chroot создаёт старый `update-users-groups.pl`.
 - Первое включение (и откат на поколение без него) — через `nixos-rebuild boot` + перезагрузку, не `switch`. При проблеме — предыдущее поколение в меню systemd-boot.
+- **Включение на уже установленной без него системе теряет пароли.** Overlay закрывает прежний `/etc`, верхний слой `/.rw-etc/upper` пуст — userborn создаёт базы заново с заблокированными паролями. Либо переустановка через `install.sh`, либо до перезагрузки перенести `passwd`/`group`/`shadow` в `/.rw-etc/upper`.
+- **`switch` на живой системе (NixOS/nixpkgs#480020: «no such user» во время `switch`).** Проверено в VM на nixpkgs `a033e66`: `switch` с изменением `/etc` (шрифт) и пользователей (убрана группа) + перезагрузка — чисто. У автора issue `users.mutableUsers = false`, у нас `true`. Гипотеза по коду модуля userborn, не доказана: при `false` `/etc/{passwd,group,shadow}` — ro bind-mount'ы, которые userborn снимает и ставит заново, пока скрипт перемонтирования `/etc` переносит вложенные точки монтирования на новый overlay. При `true` этой ветки нет.
+  Перед переходом на `mutableUsers = false` и после обновления nixpkgs — повторить тест в VM со снапшотом диска.
+
+## Виртуалка для проверок
+
+VM `nixos-vm` в session-libvirt пользователя `virtjail` (`nixos/virt.nix`), хост `vm` из flake. Сама VM — состояние, не конфиг: в Nix её нет.
+
+- UEFI + Secure Boot в Setup Mode (под `sbctl enroll-keys`), q35, virtio-диск (`/dev/vda`), passt, virtiofs `/srv/virt/share` → тег `share`.
+- Пул `default` создан вручную в `/var/lib/virtjail/.local/share/libvirt/images`: virt-install ищет пул в `$HOME` клиента, а демону с `ProtectHome` туда нельзя.
+- **niri требует virgl**: видео virtio с `accel3d=yes` и SPICE `gl` с render node Intel по `/dev/dri/by-path/pci-0000:00:02.0-render` (`renderD*` перенумеруется, когда вернётся драйвер NVIDIA). Без этого niri отказывается от программного рендера, работает без мониторов и держит клавиатуру — выглядит как полное зависание, хотя гость жив.
+- Если гость «завис»: с хоста `virsh send-key nixos-vm KEY_LEFTCTRL KEY_LEFTALT KEY_F2`, `virsh screenshot`, загрузка vCPU через `virsh domstats --vcpu`.
+- Снапшот перед рискованным `switch` — только диска при выключенной VM: `sudo -u virtjail qemu-img snapshot -c <имя> <qcow2>` (`-a` — откат). Встроенные снапшоты libvirt с UEFI-переменными в pflash не работают.
