@@ -1,32 +1,32 @@
 { pkgs, user, ... }:
 
-# Rootless Docker под отдельным пользователем dockdev.
+# Rootless Docker под отдельным пользователем dockerjail.
 # Демон стартует лениво: systemd держит сокет, dockerd поднимается при первом обращении.
 let
-  dockUser = "dockdev";
+  dockUser = "dockerjail";
   dockUid = 1001;
   sock = "/run/user/${toString dockUid}/docker.sock";
   # сокет самого dockerd, наружу смотрит только прокси-сокет выше
   realSock = "/run/user/${toString dockUid}/docker-real.sock";
-  # проекты вне дома: dockdev в /home/${user} не пускаем совсем, в доме только симлинк
+  # проекты вне дома: dockerjail в /home/${user} не пускаем совсем, в доме только симлинк
   projects = "/srv/projects";
   projectsLink = "/home/${user}/projects";
 
-  # запускается от dockdev через sudo
-  mkDockdevExec = name: bin: pkgs.writeShellScript "dockdev-${name}" ''
+  # запускается от dockerjail через sudo
+  mkDockerjailExec = name: bin: pkgs.writeShellScript "dockerjail-${name}" ''
     export DOCKER_HOST=unix://${sock}
-    # lazydocker/dive сами зовут docker (compose, build): обёртка из PATH не годится, sudo в dockdev её не пустит
+    # lazydocker/dive сами зовут docker (compose, build): обёртка из PATH не годится, sudo в dockerjail её не пустит
     export PATH=${pkgs.docker}/bin:$PATH
     exec ${bin} "$@"
   '';
 
-  dockdevDocker = mkDockdevExec "docker" "${pkgs.docker}/bin/docker";
+  dockerjailDocker = mkDockerjailExec "docker" "${pkgs.docker}/bin/docker";
 
-  # клиенты, которые ходят в сокет напрямую; сам сокет доступен только dockdev
-  dockdevTools = {
-    docker = dockdevDocker;
-    lazydocker = mkDockdevExec "lazydocker" "${pkgs.lazydocker}/bin/lazydocker";
-    dive = mkDockdevExec "dive" "${pkgs.dive}/bin/dive";
+  # клиенты, которые ходят в сокет напрямую; сам сокет доступен только dockerjail
+  dockerjailTools = {
+    docker = dockerjailDocker;
+    lazydocker = mkDockerjailExec "lazydocker" "${pkgs.lazydocker}/bin/lazydocker";
+    dive = mkDockerjailExec "dive" "${pkgs.dive}/bin/dive";
   };
 
   daemonJson = pkgs.writeText "daemon.json" (builtins.toJSON {
@@ -41,7 +41,7 @@ let
   });
 
   # команды для основного пользователя, работают и в скриптах/IDE.
-  # Клиент работает от dockdev, а тот путь через симлинк в доме не пройдёт: переходим в реальный
+  # Клиент работает от dockerjail, а тот путь через симлинк в доме не пройдёт: переходим в реальный
   # каталог и переписываем пути аргументов (-v, -f, контекст сборки) на ${projects}
   mkWrapper = name: exec: pkgs.writeShellScriptBin name ''
     cd -P . 2>/dev/null || true
@@ -68,10 +68,10 @@ in
   security.sudo.extraRules = [{
     users = [ user ];
     runAs = dockUser;
-    commands = map (exec: { command = "${exec}"; options = [ "NOPASSWD" ]; }) (builtins.attrValues dockdevTools);
+    commands = map (exec: { command = "${exec}"; options = [ "NOPASSWD" ]; }) (builtins.attrValues dockerjailTools);
   }];
 
-  environment.systemPackages = builtins.attrValues (builtins.mapAttrs mkWrapper dockdevTools);
+  environment.systemPackages = builtins.attrValues (builtins.mapAttrs mkWrapper dockerjailTools);
 
   systemd.user.sockets.docker = {
     description = "Docker socket (rootless, lazy)";
@@ -93,7 +93,7 @@ in
     serviceConfig.ExecStart = "${pkgs.systemd}/lib/systemd/systemd-socket-proxyd ${realSock}";
   };
 
-  # повторяет virtualisation.docker.rootless, но без автостарта и только для dockdev
+  # повторяет virtualisation.docker.rootless, но без автостарта и только для dockerjail
   systemd.user.services.docker = {
     description = "Docker Application Container Engine (Rootless)";
     # нужен newuidmap
@@ -125,7 +125,7 @@ in
     unitConfig.ConditionUser = dockUser;
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${dockdevDocker} system prune -f --filter until=336h";
+      ExecStart = "${dockerjailDocker} system prune -f --filter until=336h";
       Nice = 19;
       IOSchedulingClass = "idle";
     };
@@ -140,7 +140,7 @@ in
     };
   };
 
-  # ssh-agent из gcr включён для всех пользователей, dockdev он не нужен
+  # ssh-agent из gcr включён для всех пользователей, dockerjail он не нужен
   systemd.user.sockets.gcr-ssh-agent.unitConfig.ConditionUser = "!${dockUser}";
   systemd.user.services.gcr-ssh-agent.unitConfig.ConditionUser = "!${dockUser}";
 

@@ -1,10 +1,10 @@
 { pkgs, user, ... }:
 
-# QEMU/KVM через libvirt в session-режиме под отдельным пользователем virtdev.
+# QEMU/KVM через libvirt в session-режиме под отдельным пользователем virtjail.
 # Демон стартует лениво: systemd держит сокет, virtqemud поднимается при подключении
 # virt-manager/virsh и завершается через 2 минуты после последней VM.
 let
-  virtUser = "virtdev";
+  virtUser = "virtjail";
   home = "/var/lib/${virtUser}";
   # и сокет, и XDG_RUNTIME_DIR демона; linqur проходит сюда через группу virtshare
   runDir = "/run/${virtUser}";
@@ -12,10 +12,10 @@ let
   # без "+unix": с явным транспортом virt-manager считает хост удалённым
   # и не берёт экран VM через дескриптор (OpenGraphicsFD); транспорт unix и так по умолчанию
   uri = "qemu:///session?socket=${sock}";
-  # общий каталог linqur и virtdev: ISO в iso/, остальное — папки для virtiofs и прочего обмена
+  # общий каталог linqur и virtjail: ISO в iso/, остальное — папки для virtiofs и прочего обмена
   virtDir = "/srv/virt";
   virtLink = "/home/${user}/virt";
-  # наследуемые права на запись обоим: файлы, созданные virtdev (VM, virtiofs), остаются редактируемыми для linqur и наоборот
+  # наследуемые права на запись обоим: файлы, созданные virtjail (VM, virtiofs), остаются редактируемыми для linqur и наоборот
   virtAcl = "u:${virtUser}:rwx,u:${user}:rwx,g:virtshare:rwx,m::rwx,d:u:${virtUser}:rwx,d:u:${user}:rwx,d:g:virtshare:rwx,d:m::rwx";
   # share/ открыт всем и по наследству: гостевые uid через virtiofs (300000+) в ACL не перечислены, пишут как «other»
   shareAcl = "${virtAcl},o::rwx,d:o::rwx";
@@ -26,14 +26,14 @@ let
   qemu = pkgs.qemu_kvm; # только x86_64, без эмуляции других архитектур
 
   # дескрипторы UEFI-прошивок QEMU с путями через профиль
-  firmware = pkgs.runCommand "virtdev-qemu-firmware" { } ''
+  firmware = pkgs.runCommand "virtjail-qemu-firmware" { } ''
     mkdir $out
     for f in ${qemu}/share/qemu/firmware/*.json; do
       sed 's|${qemu}/share/qemu/|${profile}/share/qemu/|' "$f" > $out/$(basename "$f")
     done
   '';
 
-  vhostUser = pkgs.runCommand "virtdev-qemu-vhost-user" { } ''
+  vhostUser = pkgs.runCommand "virtjail-qemu-vhost-user" { } ''
     mkdir $out
     sed 's|${pkgs.virtiofsd}/bin/|${profile}/bin/|' \
       ${pkgs.virtiofsd}/share/qemu/vhost-user/50-virtiofsd.json > $out/50-virtiofsd.json
@@ -70,11 +70,11 @@ in
     packages = [ qemu pkgs.swtpm pkgs.passt pkgs.virtiofsd ];
   };
 
-  # прошивки и vhost-user из профиля virtdev
+  # прошивки и vhost-user из профиля virtjail
   environment.pathsToLink = [ "/share/qemu" ];
 
-  systemd.sockets.virtdev-qemud = {
-    description = "libvirt QEMU session socket (virtdev, lazy)";
+  systemd.sockets.virtjail-qemud = {
+    description = "libvirt QEMU session socket (virtjail, lazy)";
     wantedBy = [ "sockets.target" ];
     socketConfig = {
       ListenStream = sock;
@@ -88,9 +88,9 @@ in
 
   # системный юнит, а не user: не нужен linger, есть системная D-Bus для PrepareForShutdown от logind,
   # и при выключении хоста демон останавливается до D-Bus и успевает выключить гостей
-  systemd.services.virtdev-qemud = {
-    description = "libvirt QEMU session daemon (virtdev)";
-    requires = [ "virtdev-qemud.socket" ];
+  systemd.services.virtjail-qemud = {
+    description = "libvirt QEMU session daemon (virtjail)";
+    requires = [ "virtjail-qemud.socket" ];
     after = [ "dbus.service" ];
     # newuidmap для virtiofsd; qemu, swtpm, passt — по стабильному пути профиля
     path = [ "/run/wrappers" profile ];

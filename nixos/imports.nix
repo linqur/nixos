@@ -7,6 +7,7 @@
     ./docker.nix
     ./editor.nix
     ./fonts.nix
+    ./games.nix
     ./home-manager.nix
     ./init.nix
     ./initrd.nix
