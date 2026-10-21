@@ -8,6 +8,7 @@
     ./editor.nix
     ./fonts.nix
     ./games.nix
+    ./hardware.nix
     ./home-manager.nix
     ./init.nix
     ./initrd.nix
@@ -19,6 +20,7 @@
     ./nh.nix
     ./niri.nix
     ./nix.nix
+    ./nvidia.nix
     ./packages.nix
     ./stateVersion.nix
     ./timezone.nix

@@ -9,4 +9,15 @@
     laptop = "laptop";
     vm = "vm";
   };
+
+  cpu = {
+    intel = "intel";
+    virtual = "virtual";
+  };
+
+  storage = {
+    nvme = "nvme";
+    usb = "usb";
+    virtio = "virtio";
+  };
 }

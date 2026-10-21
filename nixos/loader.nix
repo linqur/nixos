@@ -1,6 +1,10 @@
+{ profile, enums, ... }:
+
 {
   boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # внешний диск не прописывается в NVRAM: грузится через \EFI\BOOT\BOOTX64.EFI из меню загрузки (F8/Esc),
+  # порядок загрузки ноутбука не меняется
+  boot.loader.efi.canTouchEfiVariables = profile.storage != enums.storage.usb;
 }
 
 # { 

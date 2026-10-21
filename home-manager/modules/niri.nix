@@ -1,5 +1,16 @@
+{ lib, profile, ... }:
+
 let
   n = import ../../lib/nord.nix;  # официальная палитра Nord
+
+  # без profile.display — режим и масштаб по умолчанию (VM: режим задаётся снаружи, virtio-gpu)
+  # mode без частоты: niri берёт максимальную для разрешения
+  output = lib.optionalString (profile ? display) ''
+    output "${profile.display.name}" {
+        mode "${profile.display.mode}"
+        scale ${toString profile.display.scale}
+    }
+  '';
 in
 {
   # Цвета Nord + геометрия как в Hyprland (gaps_in 5 / gaps_out 10 / border 2 / rounding 6)
@@ -18,10 +29,7 @@ in
         focus-follows-mouse
     }
 
-    output "Virtual-1" {
-        mode custom=true "2560x1600@240"
-        scale 1.3
-    }
+    ${output}
 
     layout {
         gaps 10

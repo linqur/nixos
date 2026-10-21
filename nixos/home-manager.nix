@@ -1,4 +1,4 @@
-{ config, pkgs, inputs, user, homeStateVersion, unstable, ... }:
+{ config, pkgs, inputs, user, homeStateVersion, unstable, profile, enums, ... }:
 
 let
   hm = config.home-manager.users.${user};
@@ -10,7 +10,7 @@ in
     useGlobalPkgs = true;
     useUserPackages = true;
     backupFileExtension = "backup";
-    extraSpecialArgs = { inherit user homeStateVersion inputs unstable; };
+    extraSpecialArgs = { inherit user homeStateVersion inputs unstable profile enums; };
     users.${user} = import ../home-manager/home.nix;
   };
 

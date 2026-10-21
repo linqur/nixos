@@ -19,51 +19,40 @@
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-unstable, disko, home-manager, ... }@inputs:
-  let 
+  outputs = { nixpkgs, nixpkgs-unstable, disko, ... }@inputs:
+  let
     user = "linqur";
     stateVersion = "26.05";
     homeStateVersion = "26.05";
     system = "x86_64-linux";
-  in {
-    # nixosConfigurations."home-rog" = nixpkgs.lib.nixosSystem {
-    #   inherit system;
+    enums = import ./lib/enums.nix;
 
-    #   specialArgs = {
-    #     inherit user stateVersion homeStateVersion inputs;
+    unstable = import nixpkgs-unstable {
+      inherit system;
+      config.allowUnfree = true;
+    };
 
-    #     unstable = import nixpkgs-unstable {
-    #       inherit system;
-    #       config.allowUnfree = true;
-    #     };
-    #     enums = import ./lib/enums.nix;
-    #   };
-
-    #   modules = [
-    #     disko.nixosModules.disko
-    #     ./hosts/home-rog/disko.nix
-    #     ./hosts/home-rog/configuration.nix
-    #   ];
-    # };
-
-    nixosConfigurations.vm = nixpkgs.lib.nixosSystem {
+    # хост — каталог hosts/<host>: профиль железа, разметка диска, имя.
+    # Профиль попадает в модули аргументом `profile`, см. «Хосты и профили» в Readme.md
+    mkHost = host: nixpkgs.lib.nixosSystem {
       inherit system;
 
       specialArgs = {
-        inherit user stateVersion homeStateVersion inputs;
-
-        unstable = import nixpkgs-unstable {
-          inherit system;
-          config.allowUnfree = true;
-        };
-        enums = import ./lib/enums.nix;
+        inherit user stateVersion homeStateVersion inputs unstable enums;
+        profile = import ./hosts/${host}/profile.nix { inherit enums; };
       };
 
       modules = [
         disko.nixosModules.disko
-        ./hosts/vm/disko.nix
-        ./hosts/vm/configuration.nix
+        ./hosts/${host}/disko.nix
+        ./hosts/${host}/configuration.nix
       ];
+    };
+  in {
+    nixosConfigurations = {
+      vm = mkHost "vm";
+      home-rog-usb-hp = mkHost "home-rog-usb-hp";
+      # home-rog = mkHost "home-rog"; — внутренний NVMe, заготовка
     };
   };
 }
