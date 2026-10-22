@@ -2,6 +2,7 @@
   imports = [
     ./audio.nix
     ./bash.nix
+    ./battery.nix
     ./console.nix
     ./dconf.nix
     ./docker.nix

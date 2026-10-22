@@ -21,7 +21,7 @@ NixOS на внешнем диске загружается на ROG Strix G18 �
 5. **Установка с live ISO NixOS** (как в VM): `install.sh` рассчитан на него (`nixos-install`, `nixos-enter`). Перед сборкой новые файлы — в git (`git add`), иначе flake их не видит.
 
 ## Отложено
-- ASUS (`asusd`/`supergfxd` или sysfs через `asus_armoury`): профиль питания, порог заряда — если без этого система работает.
+- ASUS: решено без asusd/supergfxd, порог заряда сделан, профиль питания — вместе с CPU; см. [power.md](power.md).
 - Bluetooth.
 - Тонкая настройка NVIDIA, CPU — [cpu.md](cpu.md), остальное — [arch-migration.md](arch-migration.md).
 - Suspend: с корнем на USB не полагаемся, проверить отдельно.

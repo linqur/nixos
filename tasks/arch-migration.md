@@ -9,8 +9,8 @@
 - [ ] PRIME offload (Intel основная, NVIDIA по запросу)
 - [ ] 32-бит и OpenCL (lib32-nvidia-utils, opencl-nvidia); `hardware.graphics.enable32Bit` уже есть
 - [ ] nvidia-settings, nvtop
-- [ ] `services.asusd` (asusctl): профили платформы, подсветка; связать с [cpu.md](cpu.md)
-- [ ] `services.supergfxd` (supergfxctl): переключение GPU
+- [x] ~~`services.asusd` (asusctl)~~: отклонено, sysfs через ядро — [power.md](power.md)
+- [x] ~~`services.supergfxd` (supergfxctl)~~: отклонено, гибрид + RTD3 — [power.md](power.md)
 - [ ] `hardware.cpu.intel.updateMicrocode` (intel-ucode)
 - [ ] `hardware.enableRedistributableFirmware` (linux-firmware, sof-firmware)
 - [ ] intel-undervolt (на 14-м поколении может быть заблокирован), cpupower
