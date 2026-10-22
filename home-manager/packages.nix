@@ -3,7 +3,7 @@
 {
   # lexical sorted
   home.packages = (with pkgs; [
-    htop
+    btop
     fastfetch
     thunar
     tumbler  # превью изображений в Thunar
