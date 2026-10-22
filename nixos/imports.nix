@@ -20,7 +20,7 @@
     ./nh.nix
     ./niri.nix
     ./nix.nix
-    # ./nvidia.nix
+    ./nvidia.nix
     ./packages.nix
     ./stateVersion.nix
     ./timezone.nix

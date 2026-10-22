@@ -55,6 +55,38 @@
 - **`switch` на живой системе (NixOS/nixpkgs#480020: «no such user» во время `switch`).** Проверено в VM на nixpkgs `a033e66`: `switch` с изменением `/etc` (шрифт) и пользователей (убрана группа) + перезагрузка — чисто. У автора issue `users.mutableUsers = false`, у нас `true`. Гипотеза по коду модуля userborn, не доказана: при `false` `/etc/{passwd,group,shadow}` — ro bind-mount'ы, которые userborn снимает и ставит заново, пока скрипт перемонтирования `/etc` переносит вложенные точки монтирования на новый overlay. При `true` этой ветки нет.
   Перед переходом на `mutableUsers = false` и после обновления nixpkgs — повторить тест в VM со снапшотом диска.
 
+### NVIDIA: ядро из stable, драйвер из unstable (`nixos/nvidia.nix`)
+
+В stable новые ветки драйвера не переносят: в 26.05 драйвер застрял на 595.x, а `_latest` ушло на 7.2+, где он не собирается. В unstable драйвер догоняет ядро примерно за месяц. Поэтому ядро берётся `linuxPackages_latest` из stable, а драйвер собирается из исходников отдельного входа `nixpkgs-nvidia` (ветка `nixos-unstable`) под это ядро.
+
+- **Цена:** модуль NVIDIA собирается локально при каждом обновлении ядра (несколько минут), его нет в кэше.
+- **Окно несовместимости:** новая ветка ядра появляется в stable раньше, чем драйвер из unstable её поддерживает (так было с 615.71 на 7.3). Сборка падает до активации — система не ломается, обновление блокируется.
+- Без NVIDIA (VM) ядро остаётся `_latest` из `nixos/kernel.nix`: фиксация ядра описана в `nvidia.nix`.
+
+**Рычаги.** Пока оба в положении «latest», конфиг на русле. Отклонение пишет `warning` на каждой сборке.
+
+- Ядро: `kernelPin` в `nixos/nvidia.nix` — `null` (`_latest`), `"7_2"` (ветка, получает исправления), `"lts"`.
+- Драйвер: `nixpkgs-nvidia.url` в `flake.nix` — `github:NixOS/nixpkgs/nixos-unstable` или `github:NixOS/nixpkgs/<rev>`. Предупреждение срабатывает, когда rev этого входа не совпадает с `nixpkgs-unstable`.
+
+**Сборка упала после `nix flake update`** — откатывать нечего, понять, что сдвинулось:
+
+1. Ветка ядра в имени `nvidia-open-<драйвер>-<ядро>` отличается от `uname -r` → `kernelPin = "<текущая ветка>"`.
+2. Обновился драйвер → закрепить вход на прошлый rev: `git show HEAD:flake.lock | nix run nixpkgs#jq -- -r '.nodes."nixpkgs-nvidia".locked.rev'`.
+3. Некогда разбираться → `git restore flake.lock`, обновление откладывается целиком.
+
+**Собралось, но сломалось в работе:**
+
+1. Прошлое поколение в меню systemd-boot (или `nixos-rebuild switch --rollback`).
+2. Что изменилось: `nix store diff-closures /run/booted-system /nix/var/nix/profiles/system | grep -E 'linux|nvidia'`.
+3. Закрепить изменившийся компонент рычагами выше. Если сдвинулись оба — начать с драйвера.
+
+**Возврат на русло:** `kernelPin = null`, url → `nixos-unstable`, `nix flake update nixpkgs-nvidia`. При каждом обновлении сначала пробовать `nixos-rebuild build` без фиксаций.
+
+**Ограничения.**
+
+- Ветки ядра без LTS удаляются из nixpkgs через ~3 недели после выхода следующей. Тогда `kernelPin = "7_2"` ломает eval — пора вернуться на `_latest` или уйти на `"lts"`.
+- Фиксация ветки не помогает при регрессии внутри неё (7.2.9 → 7.2.10): тогда `"lts"` или временно закрепить весь `nixpkgs` на rev.
+
 ## Виртуалка для проверок
 
 VM `nixos-vm` в session-libvirt пользователя `virtjail` (`nixos/virt.nix`), хост `vm` из flake. Сама VM — состояние, не конфиг: в Nix её нет.
