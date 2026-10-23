@@ -12,7 +12,7 @@
 #   pkgs, 
 #   ... 
 # }: let
-#   # Свой установщик UKI на ESP (см. scripts/cmd/uki-install). Собирается
+#   # Свой установщик UKI на ESP (см. scripts/src/cmd/uki-install). Собирается
 #   # из исходников, а не берётся готовым бинарём: так он воспроизводим
 #   # из git + Nix и входит в closure поколения вместе со своей версией.
 #   uki-install = pkgs.buildGoModule {
@@ -20,7 +20,7 @@
 #     version = "0";
 #     # Flake видит только файлы под git, поэтому локальный scripts/bin/
 #     # в сборку не попадает.
-#     src = ../scripts;
+#     src = ../scripts/src;
 #     # Только stdlib, зависимостей нет — хеш вендоринга не нужен.
 #     vendorHash = null;
 #     subPackages = [ "cmd/uki-install" ];

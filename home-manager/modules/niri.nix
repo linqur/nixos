@@ -1,7 +1,16 @@
-{ lib, profile, ... }:
+{ lib, pkgs, profile, ... }:
 
 let
   n = import ../../lib/nord.nix;  # официальная палитра Nord
+
+  # свой минимальный Wayland-клиент на zwlr_gamma_control_unstable_v1 (см.
+  # scripts/src/wgamma): wlsunset падал на равных -t/-T, а после фикса —
+  # получал failed от niri (fd читается с текущей позиции, не с начала).
+  # Бинарь собран и закоммичен в scripts/wgamma — здесь только копируем его
+  # в store, без пересборки при каждом rebuild.
+  wgamma = pkgs.runCommandLocal "wgamma" { } ''
+    install -Dm755 ${../../scripts/wgamma} $out/bin/wgamma
+  '';
 
   # без profile.display — режим и масштаб по умолчанию (VM: режим задаётся снаружи, virtio-gpu)
   # mode без частоты: niri берёт максимальную для разрешения
@@ -70,6 +79,8 @@ in
     prefer-no-csd
 
     spawn-at-startup "waybar"
+    // фильтр синего статично на 4000K, без учёта времени/геопозиции — свой wgamma, см. выше
+    spawn-at-startup "${wgamma}/bin/wgamma"
 
     window-rule {
         geometry-corner-radius 6

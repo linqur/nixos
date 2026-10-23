@@ -32,7 +32,7 @@
 ## Приложения и утилиты
 - [ ] discord
 - [ ] grim, slurp, swappy: проверить, хватает ли встроенного `screenshot` niri
-- [ ] hyprsunset: аналога в niri нет (wlsunset, gammastep)
+- [x] ~~hyprsunset: аналога в niri нет~~: wlsunset не работал с niri (gamma control failed), написан свой wgamma ([scripts/src/wgamma](../scripts/src/wgamma)), автозапуск в [niri.nix](../home-manager/modules/niri.nix)
 - [ ] wl-clipboard (сейчас только зависимость helix)
 - [ ] easyeffects, pavucontrol
 - [ ] xdg-utils, unzip, unrar, less, cdrtools
