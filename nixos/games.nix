@@ -1,4 +1,4 @@
-{ pkgs, user, ... }:
+{ lib, pkgs, user, profile, enums, ... }:
 
 # Игры под отдельным пользователем gamesjail: Steam, а дальше лаунчеры и эмуляторы через ту же обёртку.
 # Ничего не работает в фоне: `game <программа>` поднимает доступы и прокси, всё завершается вместе с программой.
@@ -28,7 +28,7 @@ let
 
   # запускается от gamesjail через sudo; первый аргумент — сокет прокси D-Bus, дальше программа.
   # DISPLAY и LANG/LC_* sudo сохраняет сам
-  jailExec = pkgs.writeShellScript "gamesjail-exec" ''
+  jailExec = pkgs.writeShellScript "gamesjail-exec" (''
     bus=$1
     shift
     export XDG_RUNTIME_DIR=${runDir}
@@ -42,9 +42,14 @@ let
     # вывод только через X; Qt, SDL и GTK умеют Wayland и без подсказки ищут его
     unset WAYLAND_DISPLAY
     export QT_QPA_PLATFORM=xcb SDL_VIDEODRIVER=x11 GDK_BACKEND=x11
+  '' + lib.optionalString (profile.gpu == enums.gpu.nvidia_intel) ''
+    # всё под game рисует NVIDIA, как с nvidia-offload; клиент Steam тоже — пока он открыт, dGPU не спит
+    export __NV_PRIME_RENDER_OFFLOAD=1 __NV_PRIME_RENDER_OFFLOAD_PROVIDER=NVIDIA-G0
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia __VK_LAYER_NV_optimus=NVIDIA_only
+  '' + ''
     cd
     exec "$@"
-  '';
+  '');
 
   # команда для основного пользователя: открывает gamesjail доступ к X, звуку и шине и запускает программу.
   # Каталог /run/user/<uid> пересоздаётся при каждом входе, поэтому права выдаются на каждый запуск.

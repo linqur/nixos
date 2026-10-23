@@ -31,6 +31,10 @@ lib.mkIf (profile.gpu == enums.gpu.nvidia_intel) {
     # dGPU засыпает без нагрузки (RTD3); без этого карта постоянно включена и греет ноутбук
     powerManagement.finegrained = true;
 
+    # Dynamic Boost (демон nvidia-powerd): мощность dGPU сверх базового TGP по команде прошивки.
+    # Без него карта стоит на 50 Вт даже в профиле performance; TGP через asus-armoury на G815 недоступен
+    dynamicBoost.enable = true;
+
     prime = {
       offload.enable = true;
       offload.enableOffloadCmd = true; # команда nvidia-offload

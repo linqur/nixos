@@ -96,7 +96,7 @@
 - Незакрытые пункты приёмки из VM — первым делом звук в Proton.
 - Ссылки из GTK-программ (`gio open`) и других, кто смотрит `mimeapps.list`, а не `$BROWSER`: ярлык с `gamesjail-open-uri` и назначить его обработчиком `x-scheme-handler/http(s)` для gamesjail. Steam это не исправит (переходы внутри страниц не вызывают xdg-open) — нужно для лаунчеров и менеджеров модов.
 - NVIDIA (RTX 5060 Mobile, открытые модули), PRIME offload или MUX «только dGPU» — отдельный компонент.
-- Игры на NVIDIA: `nvidia-offload %command%` или переменные в обёртке; доступ gamesjail к `/dev/nvidia*`.
+- Игры на NVIDIA: **переменные PRIME offload в обёртке** (`jailExec`, только на `nvidia_intel`, 2026-10-23) — всё под `game` на NVIDIA, `nvidia-offload` в параметрах запуска не нужен. Цена: клиент Steam тоже на NVIDIA, dGPU не спит, пока Steam открыт (Steam открывается только чтобы играть). Проверить: GPU в MangoHud; если Vulkan-игра на Intel — `MESA_VK_DEVICE_SELECT=10de:2d59` (так было с FurMark). Доступ gamesjail к `/dev/nvidia*` есть (`crw-rw-rw-`).
 - Цель: VRR включён. Скорее всего, MUX «только dGPU» (в гибридном режиме панель на Intel), проверить `niri msg outputs`. В играх VSync выключен, лимит FPS (например 90).
 - Фазмофобия на Arch/Hyprland: разрыв кадра по диагонали (похоже на синхронизацию PRIME-копирования NVIDIA → Intel) и просадки до 30 FPS. Сравнить гибридный режим и MUX «только dGPU»; MangoHud — какой GPU, загрузка GPU/CPU в просадке.
 - Remote Play с телефона под нагрузкой, ввод через XTest; решение по uinput.

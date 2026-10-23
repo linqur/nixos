@@ -6,7 +6,7 @@
 ## ПО ASUS (asusd, supergfxd, rog-control-center)
 Решение: **не ставить.** Ядро (`asus_wmi`, `asus_armoury`) уже даёт через `/sys` всё нужное:
 - профиль платформы: `/sys/firmware/acpi/platform_profile` (quiet / balanced / performance);
-- лимиты CPU и GPU: `/sys/class/firmware-attributes/asus-armoury/attributes/` (`ppt_pl1_spl`, `ppt_pl2_sppt`, `nv_tgp`, `nv_dynamic_boost`, `nv_temp_target`), значения читаются только от root;
+- лимиты CPU и GPU: `/sys/class/firmware-attributes/asus-armoury/attributes/` (`ppt_pl1_spl`, `ppt_pl2_sppt`, `nv_tgp`, `nv_dynamic_boost`, `nv_temp_target`), **на G815JMR недоступны**: модели нет в таблице лимитов драйвера (`asus_armoury: No matching power limits found`), чтение и запись дают `ENODEV` даже от root;
 - MUX и отключение dGPU: `gpu_mux_mode`, `dgpu_disable`;
 - кривые вентиляторов: hwmon `asus_custom_fan_curve`;
 - порог заряда: `BAT0/charge_control_end_threshold`;

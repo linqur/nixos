@@ -9,6 +9,7 @@
     ./editor.nix
     ./fonts.nix
     ./games.nix
+    ./gpu-tuning.nix
     ./hardware.nix
     ./home-manager.nix
     ./init.nix
