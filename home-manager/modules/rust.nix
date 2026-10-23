@@ -5,6 +5,7 @@
   home.packages = with pkgs; [
     cargo
     clippy  # rust-analyzer в VS Code проверяет через clippy
+    gcc  # cc — драйвер линковки для rustc и build.rs (пути к glibc, crt*.o)
     rustc
     rustfmt
   ];

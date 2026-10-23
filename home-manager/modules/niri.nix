@@ -12,6 +12,17 @@ let
     install -Dm755 ${../../scripts/wgamma} $out/bin/wgamma
   '';
 
+  # OSD громкости и яркости (scripts/src/wosd), тоже готовый бинарь. Демона
+  # нет: процесс живёт, пока идут нажатия, и выходит через ~1.2 с после
+  # последнего. Шрифты и wpctl/busctl подставляет обёртка.
+  wosd = pkgs.runCommandLocal "wosd" { nativeBuildInputs = [ pkgs.makeBinaryWrapper ]; } ''
+    install -Dm755 ${../../scripts/wosd} $out/libexec/wosd
+    makeWrapper $out/libexec/wosd $out/bin/wosd \
+      --set WOSD_TEXT_FONT ${pkgs.jetbrains-mono}/share/fonts/truetype/JetBrainsMono-Regular.ttf \
+      --set WOSD_ICON_FONT ${pkgs.nerd-fonts.symbols-only}/share/fonts/truetype/NerdFonts/Symbols/SymbolsNerdFont-Regular.ttf \
+      --prefix PATH : ${lib.makeBinPath [ pkgs.wireplumber pkgs.systemd ]}
+  '';
+
   # без profile.display — режим и масштаб по умолчанию (VM: режим задаётся снаружи, virtio-gpu)
   # mode без частоты: niri берёт максимальную для разрешения
   output = lib.optionalString (profile ? display) ''
@@ -140,6 +151,14 @@ in
         Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
 
         Mod+Print { screenshot; }
+
+        // Громкость и яркость с OSD, шаг 1%. Зажатая клавиша повторяет бинд
+        // с частотой автоповтора клавиатуры (дефолт niri: 600 мс, 25/с).
+        XF86AudioRaiseVolume allow-when-locked=true { spawn "${wosd}/bin/wosd" "volume" "up"; }
+        XF86AudioLowerVolume allow-when-locked=true { spawn "${wosd}/bin/wosd" "volume" "down"; }
+        XF86AudioMute allow-when-locked=true { spawn "${wosd}/bin/wosd" "volume" "mute"; }
+        XF86MonBrightnessUp allow-when-locked=true { spawn "${wosd}/bin/wosd" "brightness" "up"; }
+        XF86MonBrightnessDown allow-when-locked=true { spawn "${wosd}/bin/wosd" "brightness" "down"; }
     }
   '';
 }
