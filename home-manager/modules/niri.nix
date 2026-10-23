@@ -93,9 +93,35 @@ in
     // фильтр синего статично на 4000K, без учёта времени/геопозиции — свой wgamma, см. выше
     spawn-at-startup "${wgamma}/bin/wgamma"
 
+    // Сам niri делает плавающими диалоги и окна фиксированного размера; здесь это отключено.
+    // Плавающим окно станет только по правилу ниже с open-floating true: последующие правила перекрывают это.
     window-rule {
         geometry-corner-radius 6
         clip-to-geometry true
+        open-floating false
+    }
+
+    // Firefox открывается на всю ширину колонки (не fullscreen, отступы и рамка остаются)
+    window-rule {
+        match app-id=r#"^firefox$"#
+        exclude app-id=r#"^firefox$"# title="^(Picture-in-Picture|Картинка в картинке)$"
+        open-maximized true
+    }
+
+    window-rule {
+        match app-id=r#"^steam$"#
+        open-maximized true
+    }
+
+
+    // PiP плавает в правом нижнем углу: 1/4 ширины экрана (2048 логических px) в пропорции 16:10.
+    // Это только стартовые значения: размер и положение потом можно менять.
+    window-rule {
+        match app-id=r#"^firefox$"# title="^(Picture-in-Picture|Картинка в картинке)$"
+        open-floating true
+        default-column-width { fixed 512; }
+        default-window-height { fixed 320; }
+        default-floating-position x=15 y=15 relative-to="bottom-right"
     }
 
     hotkey-overlay {

@@ -1,7 +1,11 @@
-{ config, pkgs, unstable, ... }:
+{ config, osConfig, pkgs, unstable, ... }:
 
 let
   code = "${config.programs.vscode.package}/bin/code";
+  nixd = import ../../lib/nixd.nix {
+    inherit (config.home) homeDirectory;
+    inherit (osConfig.networking) hostName;
+  };
 in
 
 {
@@ -72,6 +76,7 @@ in
         # --- Nix (nixd) ---
         "nix.enableLanguageServer" = true;                  # языковой сервер для Nix
         "nix.serverPath" = "${pkgs.nixd}/bin/nixd";         # nixd из Nix, а не из PATH
+        "nix.serverSettings".nixd = nixd;                   # опции NixOS/home-manager и pkgs, см. lib/nixd.nix
 
         # --- Отрисовка и анимации ---
         "workbench.reduceMotion" = "on";                    # без анимаций интерфейса

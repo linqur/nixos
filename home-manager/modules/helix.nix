@@ -1,4 +1,11 @@
-{ config, pkgs, ... }:
+{ config, osConfig, pkgs, ... }:
+
+let
+  nixd = import ../../lib/nixd.nix {
+    inherit (config.home) homeDirectory;
+    inherit (osConfig.networking) hostName;
+  };
+in
 
 {
   programs.helix = {
@@ -39,7 +46,10 @@
     languages = {
       language-server = {
         # --- Nix ---
-        nixd.command = "${pkgs.nixd}/bin/nixd";  # nixd из Nix, а не из PATH; nil не нужен
+        nixd = {
+          command = "${pkgs.nixd}/bin/nixd";  # nixd из Nix, а не из PATH; nil не нужен
+          config.nixd = nixd;                 # опции NixOS/home-manager и pkgs, см. lib/nixd.nix
+        };
 
         # --- Go ---
         gopls = {
