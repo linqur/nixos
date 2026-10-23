@@ -37,5 +37,11 @@
 
     # после каждой команды: дописать в файл, почистить дубли, подтянуть команды из других сессий
     PROMPT_COMMAND="history -a; __hist_dedup''${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
+
+    # Alt+M в TTY — запустить niri (Super в консоли ядра не доходит до readline)
+    # без exec: после выхода из niri вернёмся в этот же шелл, а EXIT-трап истории отработает как обычно
+    if [ "$TERM" = linux ]; then
+      bind -x '"\em": niri-session'
+    fi
   '';
 }
