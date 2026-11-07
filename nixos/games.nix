@@ -108,6 +108,8 @@ in
 {
   users.groups.${jailUser} = { };
   users.groups.gameshare.members = [ user jailUser ];
+  # виртуальный геймпад Remote Play и Steam Input; сессия linqur такие устройства не принимает (virtual-input.nix)
+  users.groups.uinput.members = [ jailUser ];
 
   users.users.${jailUser} = {
     isSystemUser = true;

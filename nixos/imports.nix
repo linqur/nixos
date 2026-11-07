@@ -32,5 +32,6 @@
     ./touchpad.nix
     ./user.nix
     ./virt.nix
+    ./virtual-input.nix
   ];
 }
