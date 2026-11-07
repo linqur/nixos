@@ -21,8 +21,8 @@
    - niri раздаёт любому обычному Wayland-клиенту screencopy, data-control (буфер обмена), virtual keyboard/pointer, список окон.
    - Клиент Steam всё равно только X (32-бит, CEF), Proton по умолчанию тоже X. HDR не нужен (IPS-панель).
    - Обёртка: `xhost +SI:localuser:gamesjail`; внутри `WAYLAND_DISPLAY` убран, Qt/SDL/GTK принудительно на X.
-4. **Звук — ACL на сокет pipewire-pulse.** `u:gamesjail` получает `x` на `/run/user/<uid>` и `pulse/`, `rw` на `pulse/native`; больше ничего из runtime-каталога.
-   - `/run/user/<uid>` — tmpfs, пересоздаётся при входе, поэтому `setfacl` на каждый запуск. Цена — миллисекунды до старта, в рантайме ноль.
+4. **Звук — отдельный сокет pipewire-pulse `/run/gamesjail-pulse/native`.** Каталог `linqur:gameshare 0750`; из `pulse/` в runtime-каталоге linqur gamesjail ничего не получает.
+   - ACL на `/run/user/<uid>/pulse` не держится: любой клиент libpulse от linqur (Firefox, speech-dispatcher, `pactl`) делает там `chmod 0700`, маска становится `---`. Запущенные игры не замечают, но следующий запуск из уже открытого Steam остаётся без звука: pressure-vessel не видит сокет, и Wine переходит на ALSA без устройств (проверено `pactl info`, 2026-11-03).
    - Микрофон работает (pulse даёт и запись).
    - Нативный сокет pipewire не даём: SDL и Proton переходят на pulse.
 5. **D-Bus — `xdg-dbus-proxy` к шине linqur с белым списком** (как Flatpak).

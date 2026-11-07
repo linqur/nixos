@@ -11,6 +11,9 @@ let
   home = "/var/lib/${jailUser}";
   # sudo не создаёт сессию logind, поэтому /run/user/<uid> у gamesjail нет
   runDir = "/run/${jailUser}";
+  # отдельный сокет pipewire-pulse: на pulse/ в /run/user/<uid> ACL не держится, любой клиент libpulse
+  # от linqur (Firefox, speech-dispatcher, pactl) делает там chmod 0700 и обнуляет маску
+  pulseDir = "/run/${jailUser}-pulse";
   # библиотеки игр, моды, non-Steam игры; linqur правит файлы, но ничего отсюда не запускает
   gamesDir = "/srv/games";
   gamesLink = "/home/${user}/games";
@@ -36,7 +39,7 @@ let
     export XDG_RUNTIME_DIR=${runDir}
     export DBUS_SESSION_BUS_ADDRESS=unix:path=$bus
     # pipewire-pulse linqur; нативный сокет pipewire не открыт, SDL и Proton переходят на pulse
-    export PULSE_SERVER=unix:/run/user/$(${pkgs.coreutils}/bin/id -u ${user})/pulse/native
+    export PULSE_SERVER=unix:${pulseDir}/native
     # профиль gamesjail первым: в системном PATH `steam` — это обёртка linqur
     export PATH=/etc/profiles/per-user/${jailUser}/bin:/run/current-system/sw/bin
     export SHELL=${pkgs.bash}/bin/bash
@@ -66,11 +69,9 @@ let
     fi
 
     ${pkgs.xhost}/bin/xhost +SI:localuser:${jailUser} >/dev/null
-    # pipewire-pulse запускается по сокету и при старте делает chmod 0700 на pulse/, обнуляя маску ACL;
-    # поднимаем его до выдачи прав, иначе первое подключение из gamesjail закроет доступ всем следующим
+    # pipewire-pulse запускается по основному сокету, а сокет для gamesjail появляется только вместе с ним
     ${pkgs.systemd}/bin/systemctl --user start pipewire-pulse.service
-    ${pkgs.acl}/bin/setfacl -m u:${jailUser}:x "$XDG_RUNTIME_DIR" "$XDG_RUNTIME_DIR/pulse"
-    ${pkgs.acl}/bin/setfacl -m u:${jailUser}:rw "$XDG_RUNTIME_DIR/pulse/native"
+    ${pkgs.acl}/bin/setfacl -m u:${jailUser}:x "$XDG_RUNTIME_DIR"
 
     # свой прокси на каждый запуск: несколько программ могут работать одновременно
     dir=$(${pkgs.coreutils}/bin/mktemp -d "$XDG_RUNTIME_DIR/${jailUser}.XXXXXX")
@@ -124,6 +125,11 @@ in
 
   environment.systemPackages = [ game steamLauncher ];
 
+  # unix:native — обычный сокет; список заменяет значение по умолчанию, поэтому он тоже здесь
+  services.pipewire.extraConfig.pipewire-pulse."90-gamesjail" = {
+    "pulse.properties"."server.address" = [ "unix:native" "unix:${pulseDir}/native" ];
+  };
+
   # клиент Steam и большая часть игр 32-битные
   hardware.graphics.enable32Bit = true;
 
@@ -136,6 +142,7 @@ in
   systemd.tmpfiles.rules = [
     "d ${home} 0700 ${jailUser} ${jailUser} -"
     "d ${runDir} 0700 ${jailUser} ${jailUser} -"
+    "d ${pulseDir} 0750 ${user} gameshare -"
     "d ${gamesDir} 2770 ${user} gameshare -"
     "L ${gamesLink} - - - - ${gamesDir}"
     # то же в доме gamesjail: диалоги выбора файлов открываются там

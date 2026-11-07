@@ -171,6 +171,9 @@ in
         "workbench.localHistory.enabled" = false;            # не хранить копию файла при каждом сохранении
         "terminal.integrated.enablePersistentSessions" = false;  # не сохранять буфер терминала при выходе
 
+        # --- Проводник ---
+        "explorer.compactFolders" = false;  # не объединять вложенные папки в одну строку (a/b/c)
+
         # --- Лишний функционал ---
         "chat.disableAIFeatures" = true;                             # убрать встроенный Copilot/Chat целиком
         "workbench.startupEditor" = "none";                          # без страницы приветствия

@@ -52,7 +52,6 @@ in
         touchpad {
             tap
         }
-        focus-follows-mouse
     }
 
     ${output}
@@ -99,12 +98,9 @@ in
     // фильтр синего статично на 4000K, без учёта времени/геопозиции — свой wgamma, см. выше
     spawn-at-startup "${wgamma}/bin/wgamma"
 
-    // Сам niri делает плавающими диалоги и окна фиксированного размера; здесь это отключено.
-    // Плавающим окно станет только по правилу ниже с open-floating true: последующие правила перекрывают это.
     window-rule {
         geometry-corner-radius 6
         clip-to-geometry true
-        open-floating false
     }
 
     // Firefox открывается на всю ширину колонки (не fullscreen, отступы и рамка остаются)
