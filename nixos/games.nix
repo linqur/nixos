@@ -1,8 +1,8 @@
 { pkgs, user, ... }:
 
 # Игры под отдельным пользователем gamesjail: Steam, а дальше лаунчеры и эмуляторы через ту же обёртку.
-# Ничего не работает в фоне: `game <программа>` поднимает доступы и прокси, всё завершается вместе с программой.
-# Программа получает X (через Xwayland), звук через сокет pulse и отфильтрованную шину linqur;
+# Ничего не работает в фоне: `game <программа>` поднимает доступы и свою шину, всё завершается вместе с программой.
+# Программа получает X (через Xwayland), звук через сокет pulse и пустую сессионную шину gamesjail;
 # Wayland не даём: niri раздаёт обычным клиентам снимки экрана, буфер обмена и виртуальный ввод.
 # Видеокарту выбирает программа: клиент Steam на Intel, dGPU — `game nvidia-offload <программа>`
 # или `nvidia-offload %command%` в параметрах игры (sudo сбрасывает окружение, поэтому после game, не до)
@@ -22,40 +22,42 @@ let
   # MangoHud внутри FHS-окружения Steam: `mangohud %command%` в параметрах запуска
   steam = pkgs.steam.override { extraPkgs = p: [ p.mangohud ]; };
 
-  # ссылки открываются в браузере linqur через портал; xdg-open внутри Steam берёт $BROWSER.
-  # Если вызов не прошёл, Steam открывает страницу в своём окне CEF
-  openUri = pkgs.writeShellScript "gamesjail-open-uri" ''
-    # без явного типа gdbus передаёт {} строкой, и портал отвечает InvalidArgs
-    exec ${pkgs.glib}/bin/gdbus call --session \
-      --dest org.freedesktop.portal.Desktop --object-path /org/freedesktop/portal/desktop \
-      --method org.freedesktop.portal.OpenURI.OpenURI "" "$1" "@a{sv} {}" >/dev/null
+  # своя сессионная шина на каждый запуск, к шине linqur доступа нет — поэтому нет трея и ссылок в браузере linqur.
+  # Сокет — файл в каталоге gamesjail: абстрактный сокет из стандартного session.conf виден всем пользователям.
+  # Службы не активируются: launcher-service Steam запускает сам
+  busConfig = pkgs.writeText "gamesjail-session.conf" ''
+    <!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-Bus Bus Configuration 1.0//EN"
+     "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+    <busconfig>
+      <type>session</type>
+      <listen>unix:dir=${runDir}</listen>
+      <auth>EXTERNAL</auth>
+      <policy context="default">
+        <allow send_destination="*"/>
+        <allow receive_sender="*"/>
+        <allow own="*"/>
+      </policy>
+    </busconfig>
   '';
 
-  # запускается от gamesjail через sudo; первый аргумент — сокет прокси D-Bus, дальше программа.
-  # DISPLAY и LANG/LC_* sudo сохраняет сам
+  # запускается от gamesjail через sudo, аргументы — программа. DISPLAY и LANG/LC_* sudo сохраняет сам
   jailExec = pkgs.writeShellScript "gamesjail-exec" ''
-    bus=$1
-    shift
     export XDG_RUNTIME_DIR=${runDir}
-    export DBUS_SESSION_BUS_ADDRESS=unix:path=$bus
     # pipewire-pulse linqur; нативный сокет pipewire не открыт, SDL и Proton переходят на pulse
     export PULSE_SERVER=unix:${pulseDir}/native
     # профиль gamesjail первым: в системном PATH `steam` — это обёртка linqur
     export PATH=/etc/profiles/per-user/${jailUser}/bin:/run/current-system/sw/bin
     export SHELL=${pkgs.bash}/bin/bash
-    export BROWSER=${openUri}
-    # GIO (`gio open`, GTK) открывает ссылки через портал OpenURI, как во Flatpak: своих обработчиков у gamesjail нет.
-    # Портал выбора файлов прокси не пропускает — GTK тогда показывает свой диалог
-    export GIO_USE_PORTALS=1
     # вывод только через X; Qt, SDL и GTK умеют Wayland и без подсказки ищут его
     unset WAYLAND_DISPLAY
     export QT_QPA_PLATFORM=xcb SDL_VIDEODRIVER=x11 GDK_BACKEND=x11
     cd
-    exec "$@"
+    # шина завершается вместе с программой
+    exec ${pkgs.dbus}/bin/dbus-run-session --config-file=${busConfig} \
+      --dbus-daemon=${pkgs.dbus}/bin/dbus-daemon -- "$@"
   '';
 
-  # команда для основного пользователя: открывает gamesjail доступ к X, звуку и шине и запускает программу.
-  # Каталог /run/user/<uid> пересоздаётся при каждом входе, поэтому права выдаются на каждый запуск.
+  # команда для основного пользователя: открывает gamesjail доступ к X и звуку и запускает программу.
   # Вывод пока только X; режим wayland (сокет через wp_security_context_v1) — в планах, см. tasks/steam.md
   game = pkgs.writeShellScriptBin "game" ''
     set -euo pipefail
@@ -71,31 +73,8 @@ let
     ${pkgs.xhost}/bin/xhost +SI:localuser:${jailUser} >/dev/null
     # pipewire-pulse запускается по основному сокету, а сокет для gamesjail появляется только вместе с ним
     ${pkgs.systemd}/bin/systemctl --user start pipewire-pulse.service
-    ${pkgs.acl}/bin/setfacl -m u:${jailUser}:x "$XDG_RUNTIME_DIR"
 
-    # свой прокси на каждый запуск: несколько программ могут работать одновременно
-    dir=$(${pkgs.coreutils}/bin/mktemp -d "$XDG_RUNTIME_DIR/${jailUser}.XXXXXX")
-    trap '${pkgs.coreutils}/bin/rm -rf "$dir"' EXIT
-    ${pkgs.coreutils}/bin/mkfifo "$dir/ready"
-    # белый список: трей waybar (вызовы от waybar к значку входящие, их прокси не фильтрует) и открытие ссылок.
-    # systemd --user, секреты и агенты закрыты: через systemd --user был бы выход в сессию linqur
-    ${pkgs.xdg-dbus-proxy}/bin/xdg-dbus-proxy --fd=3 "$DBUS_SESSION_BUS_ADDRESS" "$dir/bus" --filter \
-      --talk=org.kde.StatusNotifierWatcher \
-      --own='org.kde.*' \
-      --call=org.freedesktop.portal.Desktop=org.freedesktop.portal.OpenURI.OpenURI@/org/freedesktop/portal/desktop \
-      --broadcast='org.freedesktop.portal.Desktop=org.freedesktop.portal.Request.*@/org/freedesktop/portal/desktop/request/*' \
-      3>"$dir/ready" &
-    # прокси пишет байт, когда готов, и завершается, когда этот конец закрыт — то есть вместе с обёрткой
-    exec 4<"$dir/ready"
-    if ! read -r -n1 -u4 _; then
-      echo "game: прокси D-Bus не запустился" >&2
-      exit 1
-    fi
-    ${pkgs.acl}/bin/setfacl -m u:${jailUser}:x "$dir"
-    ${pkgs.acl}/bin/setfacl -m u:${jailUser}:rw "$dir/bus"
-
-    # без exec: обёртка держит прокси и убирает каталог после выхода программы
-    /run/wrappers/bin/sudo -u ${jailUser} -H -- ${jailExec} "$dir/bus" "$@"
+    exec /run/wrappers/bin/sudo -u ${jailUser} -H -- ${jailExec} "$@"
   '';
 
   # ярлыки и иконки из пакета Steam, Exec=steam попадает в эту команду
