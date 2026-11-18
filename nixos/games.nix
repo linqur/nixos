@@ -40,6 +40,20 @@ let
     </busconfig>
   '';
 
+  # ссылки из gamesjail в браузер linqur без шины: строка в сокет, служба linqur открывает только http(s).
+  # Каталог 0750 linqur:gameshare, как у pulse; сокет внутри доступен всем, кто дошёл до каталога
+  openDir = "/run/${jailUser}-open";
+  # xdg-utils под gamesjail (XDG_CURRENT_DESKTOP=niri, обработчика https нет) зовёт $BROWSER
+  openClient = pkgs.writeShellScript "gamesjail-browser" ''
+    printf '%s\n' "$1" | ${pkgs.socat}/bin/socat -u - UNIX-CONNECT:${openDir}/socket
+  '';
+  # одно соединение — одна строка; через niri, чтобы браузер жил в сессии, а не в службе
+  openServer = pkgs.writeShellScript "gamesjail-open" ''
+    IFS= read -r -n 4096 url || [ -n "$url" ] || exit 1
+    [[ $url =~ ^https?://[[:graph:]]+$ ]] || exit 1
+    exec ${pkgs.niri}/bin/niri msg action spawn -- ${pkgs.xdg-utils}/bin/xdg-open "$url"
+  '';
+
   # запускается от gamesjail через sudo, аргументы — программа. DISPLAY и LANG/LC_* sudo сохраняет сам
   jailExec = pkgs.writeShellScript "gamesjail-exec" ''
     export XDG_RUNTIME_DIR=${runDir}
@@ -51,6 +65,7 @@ let
     # вывод только через X; Qt, SDL и GTK умеют Wayland и без подсказки ищут его
     unset WAYLAND_DISPLAY
     export QT_QPA_PLATFORM=xcb SDL_VIDEODRIVER=x11 GDK_BACKEND=x11
+    export BROWSER=${openClient}
     cd
     # шина завершается вместе с программой
     exec ${pkgs.dbus}/bin/dbus-run-session --config-file=${busConfig} \
@@ -72,7 +87,8 @@ let
 
     ${pkgs.xhost}/bin/xhost +SI:localuser:${jailUser} >/dev/null
     # pipewire-pulse запускается по основному сокету, а сокет для gamesjail появляется только вместе с ним
-    ${pkgs.systemd}/bin/systemctl --user start pipewire-pulse.service
+    # сокет ссылок тоже не слушает до первого запуска, дальше живёт до конца сессии
+    ${pkgs.systemd}/bin/systemctl --user start pipewire-pulse.service gamesjail-open.socket
 
     exec /run/wrappers/bin/sudo -u ${jailUser} -H -- ${jailExec} "$@"
   '';
@@ -83,6 +99,23 @@ let
     ln -s ${pkgs.writeShellScript "steam" ''exec ${game}/bin/game steam "$@"''} $out/bin/steam
     ln -s ${steam}/share $out/share
   '';
+
+  # CurseForge (аддоны WoW) — AppImage в /srv/games, обновляется вне Nix; путь к WoW задаётся в нём вручную.
+  # Вход: страница в браузере linqur, ответ cfauth:// приходит в этот ярлык, второй экземпляр отдаёт его первому
+  curseforgeApp = "${gamesDir}/curseforge/curseforge.AppImage";
+  curseforge = pkgs.symlinkJoin {
+    name = "gamesjail-curseforge";
+    paths = [
+      (pkgs.writeShellScriptBin "curseforge" ''exec ${game}/bin/game appimage-run ${curseforgeApp} "$@"'')
+      (pkgs.makeDesktopItem {
+        name = "curseforge";
+        desktopName = "CurseForge";
+        exec = "curseforge %u";
+        categories = [ "Game" ];
+        mimeTypes = [ "x-scheme-handler/cfauth" "x-scheme-handler/curseforge" ];
+      })
+    ];
+  };
 in
 {
   users.groups.${jailUser} = { };
@@ -94,7 +127,7 @@ in
     isSystemUser = true;
     group = jailUser;
     inherit home;
-    packages = [ steam ];
+    packages = [ steam pkgs.appimage-run ];
   };
 
   # linqur может запускать от gamesjail что угодно: это не повышение прав, gamesjail слабее
@@ -104,11 +137,28 @@ in
     commands = [{ command = "${jailExec}"; options = [ "NOPASSWD" ]; }];
   }];
 
-  environment.systemPackages = [ game steamLauncher ];
+  environment.systemPackages = [ game steamLauncher curseforge ];
 
   # unix:native — обычный сокет; список заменяет значение по умолчанию, поэтому он тоже здесь
   services.pipewire.extraConfig.pipewire-pulse."90-gamesjail" = {
     "pulse.properties"."server.address" = [ "unix:native" "unix:${pulseDir}/native" ];
+  };
+
+  systemd.user.sockets.gamesjail-open = {
+    unitConfig.ConditionUser = user;
+    socketConfig = {
+      ListenStream = "${openDir}/socket";
+      SocketMode = "0666";
+      Accept = true;
+    };
+  };
+  systemd.user.services."gamesjail-open@" = {
+    unitConfig.ConditionUser = user;
+    serviceConfig = {
+      ExecStart = openServer;
+      StandardInput = "socket";
+      StandardOutput = "journal";
+    };
   };
 
   # клиент Steam и большая часть игр 32-битные
@@ -124,6 +174,7 @@ in
     "d ${home} 0700 ${jailUser} ${jailUser} -"
     "d ${runDir} 0700 ${jailUser} ${jailUser} -"
     "d ${pulseDir} 0750 ${user} gameshare -"
+    "d ${openDir} 0750 ${user} gameshare -"
     "d ${gamesDir} 2770 ${user} gameshare -"
     "L ${gamesLink} - - - - ${gamesDir}"
     # то же в доме gamesjail: диалоги выбора файлов открываются там
